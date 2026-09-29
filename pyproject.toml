@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saccade"
+version = "0.1.0"
+description = "AI-Powered LaTeX Platform for Resumes, CVs & Professional Documents"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Allan Nuwamanya", email = "allan.info.comp@gmail.com" }
+]
+dependencies = [
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0",
+    "fastmcp>=0.1.0",
+    "jinja2>=3.1.3",
+    "httpx>=0.27.0",
+    "trafilatura>=1.8.0",
+    "beautifulsoup4>=4.12.3",
+    "typer>=0.12.0",
+    "rich>=13.7.1",
+    "pypdf>=4.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+llm = [
+    "anthropic>=0.25.0",
+    "openai>=1.20.0",
+    "google-genai>=0.1.0",
+]
+
+[project.scripts]
+saccade = "interfaces.cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "agents*", "rendering*", "storage*", "interfaces*", "utils*"]
