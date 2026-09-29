@@ -46,8 +46,10 @@ _build/
 *.run.xml
 *.bcf
 
-# Node / Next.js (web frontend)
+# Node / Vite (web frontend)
 node_modules/
+web/node_modules/
+web/dist/
 .next/
 out/
 .vercel

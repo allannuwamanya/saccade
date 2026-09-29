@@ -1,18 +1,26 @@
-# Saccade AI Resume & Career Document Engine
-# Production Container with Tectonic LaTeX Engine & FastAPI Studio
+# ==========================================
+# Stage 1: Build Modern React Frontend (Vite)
+# ==========================================
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/web
 
+COPY web/package.json ./
+RUN npm install
+
+COPY web/ ./
+RUN npm run build
+
+# ==========================================
+# Stage 2: Production Saccade Runtime
+# ==========================================
 FROM python:3.12-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered terminal logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8000 \
     TECTONIC_PATH=/usr/local/bin/tectonic
 
-# Install essential system dependencies:
-# - curl, ca-certificates, tar: for fetching standalone Tectonic binary
-# - poppler-utils: pdftotext for PDF resume ingestion
-# - fontconfig: system font cache discovery for LaTeX micro-typography
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
@@ -29,23 +37,24 @@ RUN curl -fsSL https://github.com/tectonic-typesetting/tectonic/releases/downloa
 
 WORKDIR /app
 
-# Install Python dependencies first for optimal Docker layer caching
+# Install Python dependencies
 COPY requirements.txt pyproject.toml ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -e .
 
-# Copy application source tree
+# Copy application source
 COPY . .
 
-# Ensure required runtime directories exist with write access
+# Copy built modern React frontend from Stage 1 into web/dist
+COPY --from=frontend-builder /app/web/dist ./web/dist
+
+# Ensure writable runtime directories
 RUN mkdir -p output .saccade && chmod -R 777 output .saccade
 
 EXPOSE 8000
 
-# Health check probe
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Launch FastAPI web studio and API server
 CMD ["sh", "-c", "uvicorn interfaces.api.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
