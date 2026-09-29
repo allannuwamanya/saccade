@@ -1,0 +1,71 @@
+\documentclass[\VAR{style.font_size},letterpaper]{article}
+
+\usepackage[
+    top=\VAR{style.margin_top},
+    bottom=\VAR{style.margin_bottom},
+    left=\VAR{style.margin_left},
+    right=\VAR{style.margin_right}
+]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\definecolor{primary}{HTML}{0F172A}
+\definecolor{accent}{HTML}{2563EB}
+\definecolor{textmuted}{HTML}{64748B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accent,
+    urlcolor=accent,
+    pdftitle={\VAR{basics.name} - Cover Letter},
+    pdfauthor={\VAR{basics.name}}
+}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% MODERN HEADER
+\noindent
+\begin{minipage}[t]{0.65\textwidth}
+    {\LARGE\bfseries\color{primary} \VAR{basics.name}} \\[2pt]
+    \BLOCK{ if basics.label }
+    {\small\bfseries\color{accent} \VAR{basics.label}}
+    \BLOCK{ endif }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.32\textwidth}\raggedleft\footnotesize\color{textmuted}
+    \BLOCK{ if basics.email }\href{mailto:\VAR{basics.email}}{\VAR{basics.email}} \\ \BLOCK{ endif }
+    \BLOCK{ if basics.phone }\VAR{basics.phone} \\ \BLOCK{ endif }
+    \BLOCK{ if basics.location and basics.location.city }\VAR{basics.location.city}\BLOCK{ if basics.location.region }, \VAR{basics.location.region}\BLOCK{ endif } \\ \BLOCK{ endif }
+    \BLOCK{ if basics.url }\href{\VAR{basics.url}}{\VAR{basics.url}} \BLOCK{ endif }
+\end{minipage}
+
+\vspace{6pt}
+\textcolor{accent}{\hrule height 1pt}
+\vspace{12pt}
+
+% DATE & RECIPIENT
+{\small\color{textmuted}\today} \\[10pt]
+\textbf{\color{primary}Hiring Team} \\
+\BLOCK{ if doc.target_company }\textbf{\color{primary}\VAR{doc.target_company}} \\ \BLOCK{ endif }
+\BLOCK{ if doc.target_job_title }\textit{\color{textmuted}Re: Application for \VAR{doc.target_job_title}} \\[10pt] \BLOCK{ endif }
+
+Dear Hiring Manager,
+
+\vspace{6pt}
+
+\VAR{doc.cover_letter_content}
+
+\vspace{16pt}
+
+Sincerely, \\[14pt]
+\textbf{\color{primary}\VAR{basics.name}}
+
+\end{document}

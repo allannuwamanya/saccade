@@ -1,0 +1,122 @@
+{
+  "id": "alex_mercer_canonical",
+  "basics": {
+    "name": "Alex Mercer",
+    "label": "Staff Distributed Systems Engineer",
+    "email": "alex@example.com",
+    "phone": "+1-555-0199",
+    "url": "https://alexmercer.dev",
+    "summary": "Distributed systems engineer with 8+ years experience building low-latency transaction routing pipelines and fault-tolerant storage engines.",
+    "location": {
+      "city": "San Francisco",
+      "region": "CA",
+      "countryCode": "US"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "alexmercer",
+        "url": "https://github.com/alexmercer"
+      },
+      {
+        "network": "LinkedIn",
+        "username": "alex-mercer",
+        "url": "https://linkedin.com/in/alex-mercer"
+      }
+    ]
+  },
+  "work": [
+    {
+      "id": "exp_stripe_01",
+      "name": "Stripe",
+      "position": "Senior Software Engineer",
+      "url": "https://stripe.com",
+      "startDate": "2021-03",
+      "endDate": "Present",
+      "summary": "Core Infrastructure team focusing on transaction routing & consensus systems.",
+      "highlights": [
+        "Architected multi-region failover pipeline reducing P99 latency by 35ms across 12B daily events.",
+        "Led migration of primary ledger database from Aurora Postgres to distributed CockroachDB with zero downtime.",
+        "Authored custom Raft-based consensus consensus layer in Go for distributed state synchronization."
+      ],
+      "provenance": {
+        "source_type": "manual",
+        "atomic_facts": [
+          {
+            "id": "f_stripe_01",
+            "text": "Architected multi-region failover pipeline reducing P99 latency by 35ms across 12B daily events",
+            "entity": "Stripe",
+            "metrics": ["35ms", "12B daily events"],
+            "verified": true
+          },
+          {
+            "id": "f_stripe_02",
+            "text": "Led migration of primary ledger database to CockroachDB with zero downtime",
+            "entity": "Stripe",
+            "metrics": ["zero downtime"],
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "exp_cloudflare_01",
+      "name": "Cloudflare",
+      "position": "Software Engineer II",
+      "url": "https://cloudflare.com",
+      "startDate": "2018-06",
+      "endDate": "2021-02",
+      "summary": "Edge Workers and DDoS mitigation infrastructure.",
+      "highlights": [
+        "Engineered packet filtering daemon in Rust processing 40M packets/sec with sub-millisecond overhead.",
+        "Co-designed edge rate-limiting pipeline saving $180k/month in origin bandwidth egress costs."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of Washington",
+      "area": "Computer Science",
+      "studyType": "B.S.",
+      "startDate": "2014-09",
+      "endDate": "2018-06",
+      "score": "3.88 / 4.0",
+      "courses": [
+        "Distributed Systems",
+        "Operating System Internals",
+        "Advanced Networking",
+        "Database System Concepts"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "name": "Languages",
+      "keywords": ["Rust", "Go", "Python", "C++", "SQL"]
+    },
+    {
+      "name": "Infrastructure & Systems",
+      "keywords": ["Distributed Systems", "Kafka", "CockroachDB", "Kubernetes", "gRPC", "Redis", "Linux eBPF"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Chronos Raft",
+      "description": "High-performance embeddable Raft consensus engine in Rust.",
+      "url": "https://github.com/alexmercer/chronos-raft",
+      "startDate": "2023-01",
+      "endDate": "2023-08",
+      "highlights": [
+        "Benchmarked throughput at 150k ops/sec with deterministic network partition testing via Jepsen."
+      ],
+      "keywords": ["Rust", "Raft", "Distributed Systems"]
+    }
+  ],
+  "certificates": [
+    {
+      "name": "Certified Kubernetes Administrator (CKA)",
+      "issuer": "Cloud Native Computing Foundation",
+      "date": "2022-05"
+    }
+  ]
+}

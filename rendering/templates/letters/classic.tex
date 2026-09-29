@@ -1,0 +1,63 @@
+\documentclass[\VAR{style.font_size},letterpaper]{article}
+
+\usepackage[
+    top=\VAR{style.margin_top},
+    bottom=\VAR{style.margin_bottom},
+    left=\VAR{style.margin_left},
+    right=\VAR{style.margin_right}
+]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{parskip}
+
+\definecolor{primary}{HTML}{1E293B}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    pdftitle={\VAR{basics.name} - Cover Letter},
+    pdfauthor={\VAR{basics.name}}
+}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% SENDER HEADER
+{\huge\bfseries\scshape \VAR{basics.name}} \\[2pt]
+\BLOCK{ if basics.label }
+{\large\color{primary} \VAR{basics.label}} \\[4pt]
+\BLOCK{ endif }
+\small
+\BLOCK{ if basics.email }\href{mailto:\VAR{basics.email}}{\VAR{basics.email}} \BLOCK{ endif }
+\BLOCK{ if basics.phone } $\vert$ \VAR{basics.phone} \BLOCK{ endif }
+\BLOCK{ if basics.location and basics.location.city } $\vert$ \VAR{basics.location.city}\BLOCK{ if basics.location.region }, \VAR{basics.location.region}\BLOCK{ endif } \BLOCK{ endif }
+\BLOCK{ if basics.url } $\vert$ \href{\VAR{basics.url}}{\VAR{basics.url}} \BLOCK{ endif }
+
+\vspace{6pt}
+\hrule height 0.6pt
+\vspace{12pt}
+
+% DATE & RECIPIENT
+\today \\[10pt]
+\textbf{Hiring Team} \\
+\BLOCK{ if doc.target_company }\textbf{\VAR{doc.target_company}} \\ \BLOCK{ endif }
+\BLOCK{ if doc.target_job_title }\textit{Re: Application for \VAR{doc.target_job_title}} \\[10pt] \BLOCK{ endif }
+
+Dear Hiring Manager,
+
+\vspace{6pt}
+
+\VAR{doc.cover_letter_content}
+
+\vspace{16pt}
+
+Sincerely, \\[14pt]
+\textbf{\VAR{basics.name}}
+
+\end{document}

@@ -23,6 +23,8 @@ wheels/
 .venv/
 venv/
 ENV/
+.bin/
+.saccade/
 
 # Environment Variables
 .env

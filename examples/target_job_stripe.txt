@@ -1,0 +1,22 @@
+Senior Distributed Systems Engineer - Stripe Infrastructure
+Location: San Francisco, CA / Remote
+
+About the Role:
+At Stripe, we are building the economic infrastructure for the internet. Our Distributed Systems Infrastructure team designs, builds, and operates the distributed consensus engines, transaction routing backbones, and real-time ledger synchronization layers that handle over 12 billion requests a day.
+
+What You Will Do:
+- Design, scale, and optimize multi-region distributed consensus protocols and ledger replication backbones.
+- Architect high-throughput, low-latency streaming pipelines with sub-50ms P99 SLA guarantees.
+- Collaborate with infrastructure engineers across database storage, networking, and security.
+- Drive database modernization initiatives moving from monolithic RDBMS to distributed SQL (CockroachDB).
+
+Required Qualifications:
+- 5+ years of experience engineering high-scale distributed systems and consensus protocols (Raft, Paxos).
+- Proficiency with systems languages such as Rust, Go, or C++.
+- Deep experience with distributed databases (e.g. CockroachDB, Spanner, Cassandra) and message queues (Kafka).
+- Proven track record of improving P99 latency and reliability for high-volume event streams.
+
+Preferred Qualifications:
+- Experience with Kubernetes container orchestration at scale.
+- Contributions to open-source distributed systems or storage engines.
+- Bachelor's or Master's degree in Computer Science or equivalent practical experience.

@@ -1,0 +1,153 @@
+\documentclass[\VAR{style.font_size},letterpaper]{article}
+
+\usepackage[
+    top=\VAR{style.margin_top},
+    bottom=\VAR{style.margin_bottom},
+    left=\VAR{style.margin_left},
+    right=\VAR{style.margin_right}
+]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+
+\definecolor{primary}{HTML}{1E293B}
+\definecolor{textgray}{HTML}{475569}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    pdftitle={\VAR{basics.name} - Resume},
+    pdfauthor={\VAR{basics.name}}
+}
+
+% Page numbering and header/footer cleanup
+\pagestyle{empty}
+
+% Section styling
+\titleformat{\section}{
+    \large\bfseries\scshape\raggedright\color{primary}
+}{}{0em}{}[\titlerule]
+
+\titlespacing*{\section}{0pt}{8pt}{4pt}
+
+% Tight list formatting
+\setlist[itemize]{
+    leftmargin=1.2em,
+    topsep=2pt,
+    itemsep=1.5pt,
+    parsep=0pt,
+    partopsep=0pt
+}
+
+\begin{document}
+
+% HEADER
+\begin{center}
+    {\huge\bfseries\scshape \VAR{basics.name}} \\[3pt]
+    \BLOCK{ if basics.label }
+    {\large\color{textgray} \VAR{basics.label}} \\[3pt]
+    \BLOCK{ endif }
+    \small
+    \BLOCK{ if basics.email }\href{mailto:\VAR{basics.email}}{\VAR{basics.email}} \BLOCK{ endif }
+    \BLOCK{ if basics.phone } $\vert$ \VAR{basics.phone} \BLOCK{ endif }
+    \BLOCK{ if basics.location and basics.location.city } $\vert$ \VAR{basics.location.city}\BLOCK{ if basics.location.region }, \VAR{basics.location.region}\BLOCK{ endif } \BLOCK{ endif }
+    \BLOCK{ if basics.url } $\vert$ \href{\VAR{basics.url}}{\VAR{basics.url}} \BLOCK{ endif }
+    \BLOCK{ for profile_link in basics.profiles }
+        $\vert$ \href{\VAR{profile_link.url}}{\VAR{profile_link.network}/\VAR{profile_link.username}}
+    \BLOCK{ endfor }
+\end{center}
+
+\vspace{-4pt}
+
+% SUMMARY
+\BLOCK{ if basics.summary }
+\section{Professional Summary}
+\small \VAR{basics.summary}
+\BLOCK{ endif }
+
+% WORK EXPERIENCE
+\BLOCK{ if work }
+\section{Work Experience}
+\BLOCK{ for job in work }
+\noindent
+\textbf{\VAR{job.position}} \hfill \textbf{\VAR{job.startDate} -- \VAR{job.endDate | default('Present')}} \\
+\textit{\VAR{job.name}}\BLOCK{ if job.url } (\href{\VAR{job.url}}{\VAR{job.url}})\BLOCK{ endif }
+\BLOCK{ if job.summary }
+\\[1pt]\small \VAR{job.summary}
+\BLOCK{ endif }
+\BLOCK{ if job.highlights }
+\begin{itemize}
+    \BLOCK{ for bullet in job.highlights }
+    \item \small \VAR{bullet}
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ else }
+\vspace{4pt}
+\BLOCK{ endif }
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+% EDUCATION
+\BLOCK{ if education }
+\section{Education}
+\BLOCK{ for edu in education }
+\noindent
+\textbf{\VAR{edu.institution}} \hfill \textbf{\VAR{edu.startDate} -- \VAR{edu.endDate | default('Present')}} \\
+\textit{\VAR{edu.studyType} in \VAR{edu.area}}\BLOCK{ if edu.score } $\vert$ GPA: \VAR{edu.score}\BLOCK{ endif }
+\BLOCK{ if edu.courses }
+\\[1pt]\small \textit{Relevant Coursework:} \VAR{edu.courses | join(', ')}
+\BLOCK{ endif }
+\vspace{4pt}
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+% SKILLS
+\BLOCK{ if skills }
+\section{Technical Skills}
+\begin{itemize}[leftmargin=0pt,label={}]
+    \BLOCK{ for skill_group in skills }
+    \item \small \textbf{\VAR{skill_group.name}:} \VAR{skill_group.keywords | join(', ')}
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ endif }
+
+% PROJECTS
+\BLOCK{ if projects }
+\section{Projects}
+\BLOCK{ for proj in projects }
+\noindent
+\textbf{\VAR{proj.name}} \BLOCK{ if proj.url }(\href{\VAR{proj.url}}{\VAR{proj.url}})\BLOCK{ endif }
+\BLOCK{ if proj.startDate } \hfill \textbf{\VAR{proj.startDate} -- \VAR{proj.endDate | default('Present')}} \BLOCK{ endif }
+\BLOCK{ if proj.description }
+\\[1pt]\small \VAR{proj.description}
+\BLOCK{ endif }
+\BLOCK{ if proj.highlights }
+\begin{itemize}
+    \BLOCK{ for bullet in proj.highlights }
+    \item \small \VAR{bullet}
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ else }
+\vspace{4pt}
+\BLOCK{ endif }
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+% CERTIFICATES
+\BLOCK{ if certificates }
+\section{Certifications}
+\begin{itemize}
+    \BLOCK{ for cert in certificates }
+    \item \small \textbf{\VAR{cert.name}} \BLOCK{ if cert.issuer }-- \VAR{cert.issuer}\BLOCK{ endif }\BLOCK{ if cert.date } (\VAR{cert.date})\BLOCK{ endif }
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ endif }
+
+\end{document}

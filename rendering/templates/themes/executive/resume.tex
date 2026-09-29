@@ -1,0 +1,136 @@
+\documentclass[\VAR{style.font_size},letterpaper]{article}
+
+\usepackage[
+    top=\VAR{style.margin_top},
+    bottom=\VAR{style.margin_bottom},
+    left=\VAR{style.margin_left},
+    right=\VAR{style.margin_right}
+]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{charter}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tabularx}
+
+\definecolor{primary}{HTML}{111827}
+\definecolor{rulecolor}{HTML}{374151}
+\definecolor{graytext}{HTML}{4B5563}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    urlcolor=primary,
+    pdftitle={\VAR{basics.name} - Executive Profile},
+    pdfauthor={\VAR{basics.name}}
+}
+
+\pagestyle{empty}
+
+\titleformat{\section}{
+    \normalsize\bfseries\scshape\color{primary}
+}{}{0em}{}[\vspace{1pt}\color{rulecolor}\hrule height 0.6pt]
+
+\titlespacing*{\section}{0pt}{9pt}{4pt}
+
+\setlist[itemize]{
+    leftmargin=1.1em,
+    topsep=1.5pt,
+    itemsep=1.5pt,
+    parsep=0pt,
+    partopsep=0pt
+}
+
+\begin{document}
+
+% EXECUTIVE HEADER
+\begin{center}
+    {\LARGE\bfseries \VAR{basics.name}} \\[2pt]
+    \BLOCK{ if basics.label }
+    {\small\scshape\bfseries\color{graytext} \VAR{basics.label}} \\[3pt]
+    \BLOCK{ endif }
+    \footnotesize
+    \BLOCK{ if basics.email }\href{mailto:\VAR{basics.email}}{\VAR{basics.email}}\BLOCK{ endif }
+    \BLOCK{ if basics.phone } $\vert$ \VAR{basics.phone}\BLOCK{ endif }
+    \BLOCK{ if basics.location and basics.location.city } $\vert$ \VAR{basics.location.city}, \VAR{basics.location.region | default('')}\BLOCK{ endif }
+    \BLOCK{ if basics.url } $\vert$ \href{\VAR{basics.url}}{\VAR{basics.url}}\BLOCK{ endif }
+\end{center}
+
+\vspace{-6pt}
+
+% EXECUTIVE SUMMARY
+\BLOCK{ if basics.summary }
+\section{Executive Profile}
+\small \VAR{basics.summary}
+\BLOCK{ endif }
+
+% CORE COMPETENCIES / SKILLS
+\BLOCK{ if skills }
+\section{Core Competencies}
+\begin{center}
+\small
+\BLOCK{ for skill_group in skills }
+\textbf{\VAR{skill_group.name}:} \VAR{skill_group.keywords | join(' $\\cdot$ ')} \\
+\BLOCK{ endfor }
+\end{center}
+\BLOCK{ endif }
+
+% PROFESSIONAL EXPERIENCE
+\BLOCK{ if work }
+\section{Professional Experience}
+\BLOCK{ for job in work }
+\noindent
+\textbf{\VAR{job.position}} \hfill \textbf{\VAR{job.startDate} -- \VAR{job.endDate | default('Present')}} \\
+\textbf{\color{graytext}\VAR{job.name}}\BLOCK{ if job.url } {\footnotesize(\href{\VAR{job.url}}{\VAR{job.url}})}\BLOCK{ endif }
+\BLOCK{ if job.summary }
+\\[1pt]\small\textit{\VAR{job.summary}}
+\BLOCK{ endif }
+\BLOCK{ if job.highlights }
+\begin{itemize}
+    \BLOCK{ for bullet in job.highlights }
+    \item \small \VAR{bullet}
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ else }
+\vspace{3pt}
+\BLOCK{ endif }
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+% EDUCATION & CREDENTIALS
+\BLOCK{ if education }
+\section{Education \& Credentials}
+\BLOCK{ for edu in education }
+\noindent
+\textbf{\VAR{edu.institution}} \hfill \textbf{\VAR{edu.startDate} -- \VAR{edu.endDate | default('Present')}} \\
+\VAR{edu.studyType} in \VAR{edu.area}\BLOCK{ if edu.score } $\vert$ GPA: \VAR{edu.score}\BLOCK{ endif }
+\BLOCK{ if edu.courses }
+\\[1pt]\footnotesize\textit{Selected Coursework:} \VAR{edu.courses | join(', ')}
+\BLOCK{ endif }
+\vspace{3pt}
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+% BOARD / ADVISORY / PROJECTS
+\BLOCK{ if projects }
+\section{Key Initiatives \& Projects}
+\BLOCK{ for proj in projects }
+\noindent
+\textbf{\VAR{proj.name}} \BLOCK{ if proj.startDate }\hfill \textbf{\VAR{proj.startDate} -- \VAR{proj.endDate | default('Present')}}\BLOCK{ endif }
+\BLOCK{ if proj.description }
+\\[1pt]\small \VAR{proj.description}
+\BLOCK{ endif }
+\BLOCK{ if proj.highlights }
+\begin{itemize}
+    \BLOCK{ for bullet in proj.highlights }
+    \item \small \VAR{bullet}
+    \BLOCK{ endfor }
+\end{itemize}
+\BLOCK{ endif }
+\BLOCK{ endfor }
+\BLOCK{ endif }
+
+\end{document}
