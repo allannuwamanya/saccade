@@ -5,6 +5,7 @@ from agents.job_parser import JobParserAgent
 from agents.tailor import TailoringAgent
 from agents.writer import STARWriterAgent
 from agents.ats_checker import ATSCheckerAgent
+from agents.intake import ResumeIntakeAgent
 from agents.orchestrator import SaccadeOrchestrator, TailoredApplicationBundle
 
 __all__ = [
@@ -15,6 +16,7 @@ __all__ = [
     "TailoringAgent",
     "STARWriterAgent",
     "ATSCheckerAgent",
+    "ResumeIntakeAgent",
     "SaccadeOrchestrator",
     "TailoredApplicationBundle",
 ]

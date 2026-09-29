@@ -50,6 +50,27 @@ async def save_profile(profile_json: str) -> str:
 
 
 @mcp.tool()
+async def import_resume(file_path: str, profile_id: str = "default_profile") -> Dict[str, Any]:
+    """Ingests a PDF, DOCX, or text resume file, converts it into canonical JSON Resume format, and saves it."""
+    from agents.intake import ResumeIntakeAgent
+    raw_text = ResumeIntakeAgent.extract_text(file_path)
+    profile = await ResumeIntakeAgent.parse_to_profile(
+        raw_text=raw_text,
+        source_name=Path(file_path).name,
+        profile_id=profile_id
+    )
+    storage = LocalFileStorage()
+    saved = storage.save_profile(profile)
+    return {
+        "status": "success",
+        "profile_id": saved.id,
+        "name": saved.basics.name,
+        "experiences_count": len(saved.work),
+        "skills_count": len(saved.skills)
+    }
+
+
+@mcp.tool()
 async def parse_job_posting(source: str) -> Dict[str, Any]:
     """Parses a job description from a public URL or raw pasted text into structured requirements."""
     job = await JobParserAgent.parse(source)

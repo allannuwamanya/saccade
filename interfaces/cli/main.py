@@ -42,6 +42,29 @@ def init_profile():
         console.print("[bold red]✗[/bold red] Sample profile not found.")
 
 
+@app.command("import")
+def import_resume(
+    file_path: str = typer.Argument(..., help="Path to PDF, DOCX, or text resume"),
+    profile_id: str = typer.Option("default_profile", "--id", help="Profile ID to save as")
+):
+    """Imports an existing resume (PDF, DOCX, or text) into the canonical career profile."""
+    from agents.intake import ResumeIntakeAgent
+    target = Path(file_path)
+    if not target.is_file():
+        console.print(f"[bold red]✗[/bold red] File not found: {file_path}")
+        raise typer.Exit(1)
+
+    with console.status(f"[cyan]Extracting text and parsing {target.name}...[/cyan]"):
+        raw_text = ResumeIntakeAgent.extract_text(str(target))
+        profile = asyncio.run(
+            ResumeIntakeAgent.parse_to_profile(raw_text, source_name=target.name, profile_id=profile_id)
+        )
+        storage = LocalFileStorage()
+        storage.save_profile(profile)
+
+    console.print(f"[bold green]✓ Successfully imported:[/bold green] {profile.basics.name} ({len(profile.work)} experiences, {len(profile.skills)} skill categories)")
+
+
 @app.command("profile")
 def show_profile(profile_id: str = typer.Option("default_profile", "--id", help="Profile identifier")):
     """Displays the user's canonical career profile."""

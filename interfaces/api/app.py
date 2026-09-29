@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +18,7 @@ from rendering.engine import TemplateEngine
 from rendering.compiler import LatexCompiler
 from agents.job_parser import JobParserAgent
 from agents.ats_checker import ATSCheckerAgent
+from agents.intake import ResumeIntakeAgent
 from agents.orchestrator import SaccadeOrchestrator
 
 
@@ -90,6 +91,27 @@ async def get_current_profile(profile_id: str = Query("default_profile")):
 async def update_profile(profile: MasterProfile):
     saved = storage.save_profile(profile)
     return {"status": "saved", "profile_id": saved.id}
+
+
+@app.post("/api/profile/upload")
+async def upload_resume(file: UploadFile = File(...), profile_id: str = Query("default_profile")):
+    try:
+        content = await file.read()
+        raw_text = ResumeIntakeAgent.extract_text(file.filename or "resume", file_bytes=content)
+        profile = await ResumeIntakeAgent.parse_to_profile(
+            raw_text=raw_text,
+            source_name=file.filename or "uploaded_resume",
+            profile_id=profile_id
+        )
+        saved = storage.save_profile(profile)
+        return {
+            "status": "success",
+            "profile_id": saved.id,
+            "message": f"Successfully imported resume '{file.filename}' with {len(saved.work)} experiences.",
+            "profile": saved.model_dump()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process resume upload: {e}")
 
 
 @app.post("/api/job/parse")

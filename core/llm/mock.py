@@ -35,6 +35,40 @@ class MockLLMProvider(BaseLLMProvider):
     ) -> Dict[str, Any]:
         prompt_lower = prompt.lower()
 
+        # Resume intake mock
+        if "resume" in prompt_lower or "intake" in prompt_lower or "career profile" in prompt_lower:
+            return {
+                "basics": {
+                    "name": "Johnathan Vance",
+                    "label": "Lead Infrastructure Engineer",
+                    "email": "john@example.com",
+                    "phone": "+1-555-0123",
+                    "summary": "Specializing in Kubernetes and large-scale cloud networks."
+                },
+                "work": [
+                    {
+                        "name": "Amazon Web Services (AWS)",
+                        "position": "Principal Systems Architect",
+                        "startDate": "2020-01",
+                        "endDate": "Present",
+                        "highlights": [
+                            "Scaled VPC control plane across 30 availability zones reducing latency by 45%.",
+                            "Managed $12M annual infrastructure capacity."
+                        ]
+                    }
+                ],
+                "skills": [
+                    {
+                        "name": "Cloud & Infrastructure",
+                        "keywords": ["AWS", "Kubernetes", "Terraform", "Docker"]
+                    },
+                    {
+                        "name": "Languages",
+                        "keywords": ["Go", "Python", "Bash"]
+                    }
+                ]
+            }
+
         # Job parsing mock
         if "job" in prompt_lower or "posting" in prompt_lower:
             return {
