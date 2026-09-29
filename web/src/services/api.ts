@@ -40,6 +40,19 @@ export const api = {
     return res.json();
   },
 
+  async renderRawLatex(latexSource: string): Promise<RenderResponse> {
+    const res = await fetch(`${API_BASE}/api/render/raw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latex_source: latexSource }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Raw LaTeX compilation failed' }));
+      throw new Error(err.detail || 'Raw LaTeX compilation failed');
+    }
+    return res.json();
+  },
+
   async renderDocument(
     profileId = 'default_profile',
     theme: ThemeName = 'modern',

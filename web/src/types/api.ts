@@ -16,21 +16,28 @@ export interface AtsAuditResult {
 
 export interface TailorResponse {
   status: string;
-  tailoring_id: string;
-  pdf_url: string;
+  tailoring_id?: string;
+  resume_url?: string;
+  pdf_url?: string;
+  cover_letter_url?: string | null;
   cover_letter_pdf_url?: string | null;
-  ats_score: AtsAuditResult;
-  changes_summary: Array<{
+  cover_letter_text?: string | null;
+  ats_report?: AtsAuditResult;
+  ats_score?: AtsAuditResult;
+  changes_summary?: Array<{
     category: string;
     description: string;
   }>;
-  match_confidence: number;
+  gap_analysis?: string[];
+  match_confidence?: number;
+  latex_source?: string;
 }
 
 export interface RenderResponse {
   status: string;
   pdf_url: string;
   compile_time: number;
+  latex_source?: string;
 }
 
 export interface MasterProfile {

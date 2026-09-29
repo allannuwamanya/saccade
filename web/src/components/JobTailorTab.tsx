@@ -92,14 +92,14 @@ export const JobTailorTab: React.FC<JobTailorTabProps> = ({
       <AtsCard ats={atsResult} />
 
       {/* Tailoring Changes Summary */}
-      {tailorResult && tailorResult.changes_summary.length > 0 && (
+      {tailorResult && (tailorResult.changes_summary?.length || 0) > 0 && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm space-y-2">
           <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-blue-400" />
             Tailoring Modifications Applied
           </div>
           <div className="space-y-1.5 pt-1">
-            {tailorResult.changes_summary.map((change, idx) => (
+            {tailorResult.changes_summary?.map((change, idx) => (
               <div key={idx} className="flex items-start gap-2 text-xs text-slate-300 bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
                 <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>

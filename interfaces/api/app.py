@@ -156,10 +156,35 @@ async def tailor_application(req: TailorRequest):
             "gap_analysis": bundle.gap_analysis,
             "resume_url": f"/api/pdf/{resume_filename}" if resume_filename else None,
             "cover_letter_url": f"/api/pdf/{letter_filename}" if letter_filename else None,
-            "cover_letter_text": bundle.cover_letter_text
+            "cover_letter_text": bundle.cover_letter_text,
+            "latex_source": bundle.latex_source
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Tailoring failed: {e}")
+
+
+class RenderRawRequest(BaseModel):
+    latex_source: str
+    document_name: str = "custom_document"
+
+
+@app.post("/api/render/raw")
+async def render_raw_latex(req: RenderRawRequest):
+    import hashlib
+    h = hashlib.md5(req.latex_source.encode("utf-8")).hexdigest()[:8]
+    filename = f"render_raw_{h}.pdf"
+    out_path = OUTPUT_DIR / filename
+
+    res = compiler.compile(req.latex_source, output_pdf_path=str(out_path))
+    if not res.success:
+        raise HTTPException(status_code=500, detail=f"LaTeX compilation failed: {res.compilation_log}")
+
+    return {
+        "status": "success",
+        "pdf_url": f"/api/pdf/{filename}",
+        "compile_time": res.compile_time_seconds,
+        "latex_source": req.latex_source
+    }
 
 
 @app.post("/api/render")
@@ -181,7 +206,8 @@ async def render_pdf(req: RenderDirectRequest):
     return {
         "status": "success",
         "pdf_url": f"/api/pdf/{filename}",
-        "compile_time": res.compile_time_seconds
+        "compile_time": res.compile_time_seconds,
+        "latex_source": latex_src
     }
 
 
