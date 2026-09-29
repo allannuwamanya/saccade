@@ -167,5 +167,16 @@ def audit_ats(
     console.print(table)
 
 
+@app.command("serve")
+def serve_web(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Host address to bind"),
+    port: int = typer.Option(8000, "--port", "-p", help="Port to listen on")
+):
+    """Starts the Saccade Web Studio and API server."""
+    import uvicorn
+    console.print(f"[bold green]🚀 Starting Saccade Studio at:[/bold green] [underline cyan]http://{host}:{port}[/underline cyan]")
+    uvicorn.run("interfaces.api.app:app", host=host, port=port, reload=False)
+
+
 if __name__ == "__main__":
     app()

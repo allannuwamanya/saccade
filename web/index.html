@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saccade Studio | AI-Powered LaTeX Career Documents</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden antialiased selection:bg-brand-600 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="h-14 border-b border-slate-800 bg-slate-900/80 backdrop-blur px-4 flex items-center justify-between shrink-0 z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+        <i data-lucide="file-text" class="w-4 h-4 text-white"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Saccade</span>
+          <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-400 border border-brand-500/20">Studio v1.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME & COMPILE ACTIONS -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-1 text-xs">
+        <span class="text-slate-400 px-2 flex items-center gap-1.5">
+          <i data-lucide="palette" class="w-3.5 h-3.5"></i> Theme:
+        </span>
+        <select id="themeSelector" class="bg-transparent text-slate-200 focus:outline-none pr-2 font-medium cursor-pointer">
+          <option value="classic" class="bg-slate-900">Classic Serif</option>
+          <option value="modern" class="bg-slate-900" selected>Modern Tech Sans</option>
+          <option value="executive" class="bg-slate-900">Executive Leadership</option>
+        </select>
+      </div>
+
+      <button id="renderCurrentBtn" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition">
+        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+        <span>Quick Render</span>
+      </button>
+
+      <a id="downloadPdfLink" href="/api/pdf/alex_mercer_modern.pdf" download="resume.pdf" class="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded-lg shadow-sm shadow-brand-600/30 transition">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span>Download PDF</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN STUDIO WORKSPACE (DUAL PANE) -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- LEFT PANE: CONTROLS, TAILORING & PROFILE -->
+    <div class="w-1/2 min-w-[420px] max-w-[680px] border-r border-slate-800 flex flex-col bg-slate-900/40">
+      
+      <!-- TABS HEADER -->
+      <div class="flex border-b border-slate-800 px-4 pt-2 gap-2 text-xs font-medium shrink-0 bg-slate-900/60">
+        <button id="tabTailorBtn" class="px-4 py-2 border-b-2 border-brand-500 text-brand-400 font-semibold flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Job Tailor & ATS
+        </button>
+        <button id="tabProfileBtn" class="px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i> Canonical Profile
+        </button>
+      </div>
+
+      <!-- TAB 1: TAILOR & ATS VIEW -->
+      <div id="tailorTabContent" class="flex-1 overflow-y-auto p-4 space-y-4">
+        
+        <!-- JOB INPUT CARD -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider">
+              <i data-lucide="briefcase" class="w-3.5 h-3.5 text-brand-400"></i> Target Job Posting
+            </label>
+            <button id="loadSampleJobBtn" class="text-[11px] text-brand-400 hover:text-brand-300 font-medium">
+              Load Sample Stripe Role
+            </button>
+          </div>
+          
+          <textarea id="jobSourceInput" rows="6" placeholder="Paste job posting text or enter public posting URL..." class="w-full text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none focus:border-brand-500 transition placeholder:text-slate-600 resize-none"></textarea>
+
+          <div class="mt-3 flex items-center justify-between">
+            <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <input type="checkbox" id="coverLetterToggle" checked class="rounded border-slate-700 bg-slate-950 text-brand-600 focus:ring-brand-500 w-3.5 h-3.5">
+              <span>Generate Matching Cover Letter</span>
+            </label>
+
+            <button id="runTailorBtn" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-lg shadow-md shadow-brand-600/25 transition">
+              <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+              <span>Tailor & Compile</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ATS SCORECARD (DYNAMICALLY UPDATED) -->
+        <div id="atsCard" class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> ATS Compliance Scorecard
+            </div>
+            <span id="atsOverallBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              88 / 100
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+            <div class="bg-slate-950 border border-slate-800/80 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400">Keywords</div>
+              <div id="atsKeywordScore" class="text-base font-bold text-slate-200">81%</div>
+            </div>
+            <div class="bg-slate-950 border border-slate-800/80 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400">Formatting</div>
+              <div id="atsFormatScore" class="text-base font-bold text-slate-200">100%</div>
+            </div>
+            <div class="bg-slate-950 border border-slate-800/80 rounded-lg p-2">
+              <div class="text-[10px] text-slate-400">Reading Order</div>
+              <div id="atsOrderScore" class="text-base font-bold text-emerald-400">Passed</div>
+            </div>
+          </div>
+
+          <!-- KEYWORDS PILLS -->
+          <div class="space-y-2 text-xs">
+            <div>
+              <div class="text-[11px] font-medium text-slate-400 mb-1">Matched Keywords:</div>
+              <div id="matchedKeywordsList" class="flex flex-wrap gap-1">
+                <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]">Rust</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]">Kafka</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]">Distributed Systems</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]">CockroachDB</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]">Kubernetes</span>
+              </div>
+            </div>
+
+            <div id="missingKeywordsContainer" class="pt-1">
+              <div class="text-[11px] font-medium text-slate-400 mb-1">Missing Target Terms:</div>
+              <div id="missingKeywordsList" class="flex flex-wrap gap-1">
+                <span class="px-2 py-0.5 rounded bg-amber-950/40 text-amber-300 border border-amber-800/40 text-[10px]">microservices</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- GAP ANALYSIS LIST -->
+          <div id="gapsContainer" class="mt-3 pt-3 border-t border-slate-800/80">
+            <div class="text-[11px] font-semibold text-amber-400 flex items-center gap-1.5 mb-1">
+              <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Gap Analysis & Recommendations
+            </div>
+            <ul id="gapsList" class="text-xs text-slate-400 space-y-1 list-disc list-inside">
+              <li>Profile exhibits strong systems depth matching Stripe's consensus stack.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PROFILE VIEW -->
+      <div id="profileTabContent" class="flex-1 overflow-y-auto p-4 space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-brand-400"></i> Master Career Graph (JSON Resume)
+          </span>
+          <button id="saveProfileBtn" class="flex items-center gap-1.5 px-3 py-1 bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium rounded transition">
+            <i data-lucide="save" class="w-3 h-3"></i> Save Changes
+          </button>
+        </div>
+        <textarea id="profileJsonInput" rows="22" class="w-full text-xs font-mono bg-slate-950 border border-slate-800 rounded-lg p-3 text-slate-200 focus:outline-none focus:border-brand-500 transition resize-none"></textarea>
+      </div>
+
+      <!-- FOOTER STATUS BAR -->
+      <div class="h-9 border-t border-slate-800 bg-slate-950 px-4 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>FastAPI Engine & Tectonic Compiler: <strong class="text-slate-400">Ready</strong></span>
+        </div>
+        <span id="statusMessage">Zero-Hallucination Guardrail: Active</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANE: LIVE VECTOR PDF PREVIEW -->
+    <div class="flex-1 flex flex-col bg-slate-950">
+      
+      <!-- PREVIEW TOOLBAR -->
+      <div class="h-10 border-b border-slate-800 bg-slate-900/60 px-4 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <button id="viewResumeBtn" class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 text-brand-400 border border-slate-700">
+            Resume PDF
+          </button>
+          <button id="viewLetterBtn" class="px-2.5 py-1 text-xs font-medium rounded text-slate-400 hover:text-slate-200 transition">
+            Cover Letter PDF
+          </button>
+        </div>
+        <div class="text-[11px] text-slate-400 font-mono flex items-center gap-2">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-brand-400"></i>
+          <span id="previewMeta">Vector XeTeX / Tectonic Compile</span>
+        </div>
+      </div>
+
+      <!-- PDF VIEWER CONTAINER -->
+      <div class="flex-1 relative bg-slate-950 flex items-center justify-center p-2">
+        <iframe id="pdfPreviewFrame" src="/api/pdf/alex_mercer_modern.pdf" class="w-full h-full rounded border border-slate-800/80 shadow-2xl bg-white" title="PDF Preview"></iframe>
+        
+        <!-- LOADING OVERLAY -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 transition-opacity hidden">
+          <div class="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-xs text-slate-300 font-medium">Running Saccade agent pipeline & compiling LaTeX...</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Elements
+    const tabTailorBtn = document.getElementById('tabTailorBtn');
+    const tabProfileBtn = document.getElementById('tabProfileBtn');
+    const tailorTabContent = document.getElementById('tailorTabContent');
+    const profileTabContent = document.getElementById('profileTabContent');
+    const themeSelector = document.getElementById('themeSelector');
+    const jobSourceInput = document.getElementById('jobSourceInput');
+    const loadSampleJobBtn = document.getElementById('loadSampleJobBtn');
+    const runTailorBtn = document.getElementById('runTailorBtn');
+    const renderCurrentBtn = document.getElementById('renderCurrentBtn');
+    const profileJsonInput = document.getElementById('profileJsonInput');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const viewResumeBtn = document.getElementById('viewResumeBtn');
+    const viewLetterBtn = document.getElementById('viewLetterBtn');
+    const downloadPdfLink = document.getElementById('downloadPdfLink');
+
+    let currentResumeUrl = '/api/pdf/alex_mercer_modern.pdf';
+    let currentLetterUrl = null;
+
+    // Tab Switching
+    tabTailorBtn.addEventListener('click', () => {
+      tabTailorBtn.className = "px-4 py-2 border-b-2 border-brand-500 text-brand-400 font-semibold flex items-center gap-2";
+      tabProfileBtn.className = "px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+      tailorTabContent.classList.remove('hidden');
+      profileTabContent.classList.add('hidden');
+    });
+
+    tabProfileBtn.addEventListener('click', () => {
+      tabProfileBtn.className = "px-4 py-2 border-b-2 border-brand-500 text-brand-400 font-semibold flex items-center gap-2";
+      tabTailorBtn.className = "px-4 py-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2";
+      profileTabContent.classList.remove('hidden');
+      tailorTabContent.classList.add('hidden');
+      loadProfileData();
+    });
+
+    // Preview Switcher
+    viewResumeBtn.addEventListener('click', () => {
+      viewResumeBtn.className = "px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 text-brand-400 border border-slate-700";
+      viewLetterBtn.className = "px-2.5 py-1 text-xs font-medium rounded text-slate-400 hover:text-slate-200 transition";
+      if (currentResumeUrl) {
+        pdfPreviewFrame.src = currentResumeUrl;
+        downloadPdfLink.href = currentResumeUrl;
+      }
+    });
+
+    viewLetterBtn.addEventListener('click', () => {
+      if (!currentLetterUrl) {
+        alert("Cover letter not generated yet. Enable 'Generate Matching Cover Letter' and click Tailor.");
+        return;
+      }
+      viewLetterBtn.className = "px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 text-brand-400 border border-slate-700";
+      viewResumeBtn.className = "px-2.5 py-1 text-xs font-medium rounded text-slate-400 hover:text-slate-200 transition";
+      pdfPreviewFrame.src = currentLetterUrl;
+      downloadPdfLink.href = currentLetterUrl;
+    });
+
+    // Load Profile
+    async function loadProfileData() {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          profileJsonInput.value = JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+      }
+    }
+
+    // Save Profile
+    saveProfileBtn.addEventListener('click', async () => {
+      try {
+        const parsed = JSON.parse(profileJsonInput.value);
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsed)
+        });
+        if (res.ok) {
+          alert('Profile successfully saved!');
+        }
+      } catch (e) {
+        alert('Invalid JSON: ' + e.message);
+      }
+    });
+
+    // Load Sample Job
+    loadSampleJobBtn.addEventListener('click', () => {
+      jobSourceInput.value = `Senior Distributed Systems Engineer - Stripe Infrastructure\nLocation: San Francisco, CA / Remote\n\nAbout the Role:\nOur Distributed Systems Infrastructure team designs, builds, and operates the distributed consensus engines and transaction routing backbones handling over 12 billion events daily.\n\nRequired Qualifications:\n- 5+ years building high-scale distributed consensus protocols (Raft, Paxos).\n- Proficiency in systems languages (Rust, Go, or C++).\n- Deep experience with distributed databases (CockroachDB) and message queues (Kafka).\n- Demonstrated track record improving P99 latency.\n\nPreferred Qualifications:\n- Experience with Kubernetes at scale.`;
+    });
+
+    // Quick Render
+    renderCurrentBtn.addEventListener('click', async () => {
+      loadingOverlay.classList.remove('hidden');
+      try {
+        const theme = themeSelector.value;
+        const res = await fetch('/api/render', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            profile_id: 'default_profile',
+            theme: theme,
+            document_type: 'resume'
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.pdf_url) {
+          currentResumeUrl = data.pdf_url;
+          pdfPreviewFrame.src = currentResumeUrl + '?t=' + Date.now();
+          downloadPdfLink.href = currentResumeUrl;
+        } else {
+          alert('Render error: ' + (data.detail || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Compile request failed: ' + err.message);
+      } finally {
+        loadingOverlay.classList.add('hidden');
+      }
+    });
+
+    // Run Tailoring Pipeline
+    runTailorBtn.addEventListener('click', async () => {
+      const jobSource = jobSourceInput.value.trim();
+      if (!jobSource) {
+        alert("Please paste a job description or URL first.");
+        return;
+      }
+
+      loadingOverlay.classList.remove('hidden');
+      try {
+        const theme = themeSelector.value;
+        const genLetter = document.getElementById('coverLetterToggle').checked;
+
+        const res = await fetch('/api/tailor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_source: jobSource,
+            profile_id: 'default_profile',
+            theme: theme,
+            generate_cover_letter: genLetter
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+          // Update Preview
+          if (data.resume_url) {
+            currentResumeUrl = data.resume_url;
+            pdfPreviewFrame.src = currentResumeUrl + '?t=' + Date.now();
+            downloadPdfLink.href = currentResumeUrl;
+          }
+          if (data.cover_letter_url) {
+            currentLetterUrl = data.cover_letter_url;
+          }
+
+          // Update Scorecard
+          const rep = data.ats_report;
+          document.getElementById('atsOverallBadge').innerText = rep.overall_score + ' / 100';
+          document.getElementById('atsKeywordScore').innerText = rep.keyword_score + '%';
+          document.getElementById('atsFormatScore').innerText = rep.formatting_score + '%';
+          document.getElementById('atsOrderScore').innerText = rep.reading_order_passed ? 'Passed' : 'Warning';
+
+          // Update Matched Keywords
+          const matchedEl = document.getElementById('matchedKeywordsList');
+          matchedEl.innerHTML = '';
+          (rep.matched_keywords || []).slice(0, 10).forEach(kw => {
+            const span = document.createElement('span');
+            span.className = "px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800/40 text-[10px]";
+            span.innerText = kw;
+            matchedEl.appendChild(span);
+          });
+
+          // Update Missing Keywords
+          const missingEl = document.getElementById('missingKeywordsList');
+          missingEl.innerHTML = '';
+          (rep.missing_keywords || []).slice(0, 8).forEach(kw => {
+            const span = document.createElement('span');
+            span.className = "px-2 py-0.5 rounded bg-amber-950/40 text-amber-300 border border-amber-800/40 text-[10px]";
+            span.innerText = kw;
+            missingEl.appendChild(span);
+          });
+
+          // Update Gaps
+          const gapsEl = document.getElementById('gapsList');
+          gapsEl.innerHTML = '';
+          const gaps = data.gap_analysis || [];
+          if (gaps.length === 0) {
+            const li = document.createElement('li');
+            li.innerText = 'All primary job requirements matched truthful profile experiences!';
+            gapsEl.appendChild(li);
+          } else {
+            gaps.forEach(g => {
+              const li = document.createElement('li');
+              li.innerText = g;
+              gapsEl.appendChild(li);
+            });
+          }
+
+        } else {
+          alert('Tailoring error: ' + (data.detail || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Tailoring request failed: ' + err.message);
+      } finally {
+        loadingOverlay.classList.add('hidden');
+      }
+    });
+
+    // Initial load
+    loadProfileData();
+  </script>
+</body>
+</html>
