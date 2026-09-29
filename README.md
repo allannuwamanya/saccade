@@ -56,11 +56,12 @@ Saccade has **one shared agent core** accessible through multiple surfaces:
 
 1. **Model Context Protocol (MCP) Server (`interfaces/mcp`)**:
    - Primary interface for AI coding environments (**Claude Code**, **Google Antigravity**, **Cursor**, **Claude Desktop**).
-   - Allows your agent to inspect your career profile, fetch a job URL, tailor your resume, check ATS scores, and compile a PDF directly from your chat prompt.
-2. **Next.js Web Studio (`web/`)**:
-   - Complete browser studio with side-by-side live PDF preview and conversational tailoring chat, powered by the same backend API.
+   - Exposes tools to inspect profiles, import existing resumes, fetch job URLs, tailor bullets, audit ATS compliance, and compile vector PDFs.
+   - Run `saccade mcp` to start the server. See complete setup instructions in [docs/MCP_GUIDE.md](file:///home/a-n/Documents/BUSINESS/saccade/docs/MCP_GUIDE.md).
+2. **Interactive Web Studio (`web/`)**:
+   - Browser studio with dual-pane real-time PDF canvas preview, drag-and-drop resume upload, and ATS scorecard. Run `saccade serve`.
 3. **Command Line Interface (`interfaces/cli`)**:
-   - Fast, local terminal commands for power users and CI/CD pipelines.
+   - Fast, local terminal commands (`saccade init`, `import`, `profile`, `tailor`, `ats`, `render`, `serve`, `mcp`).
 
 ---
 

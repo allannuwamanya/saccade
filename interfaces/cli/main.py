@@ -201,5 +201,19 @@ def serve_web(
     uvicorn.run("interfaces.api.app:app", host=host, port=port, reload=False)
 
 
+@app.command("mcp")
+def run_mcp_server(
+    transport: str = typer.Option("stdio", "--transport", "-t", help="MCP transport: 'stdio' (default) or 'sse'"),
+    port: int = typer.Option(8001, "--port", "-p", help="Port for SSE transport")
+):
+    """Starts the FastMCP server for AI coding agents (Claude Code, Cursor, Antigravity)."""
+    from interfaces.mcp.server import mcp
+    if transport == "sse":
+        console.print(f"[bold green]🔌 Starting Saccade MCP server (SSE) on port {port}...[/bold green]")
+        mcp.run(transport="sse", port=port)
+    else:
+        mcp.run(transport="stdio")
+
+
 if __name__ == "__main__":
     app()
