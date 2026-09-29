@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: saccade
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: SACCADE_ENV
+        value: production
+      - key: LLM_PROVIDER
+        value: mock

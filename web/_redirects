@@ -1,0 +1,3 @@
+# Cloudflare Pages API Reverse Proxy
+# Forwards /api/* calls to backend service (Render or custom backend host)
+/api/* https://saccade.onrender.com/api/:splat 200

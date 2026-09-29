@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.pytest_cache/
+.bin/
+tmp/
+*.aux
+*.log
+*.out

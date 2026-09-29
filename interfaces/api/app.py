@@ -64,6 +64,7 @@ class RenderDirectRequest(BaseModel):
     document_type: DocumentType = DocumentType.RESUME
 
 
+@app.get("/health")
 @app.get("/api/health")
 async def health_check():
     return {
