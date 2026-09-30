@@ -1,103 +1,55 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LandingPage } from './components/LandingPage';
-import { AuthModal } from './components/AuthModal';
-import { DashboardNav, DashboardTab } from './components/DashboardNav';
-import { StudioView } from './components/studio/StudioView';
-import { ProfileView } from './components/profile/ProfileView';
-import { ApplicationsView } from './components/applications/ApplicationsView';
-import { AgentHubView } from './components/agent-hub/AgentHubView';
-import { api } from './services/api';
-import { MasterProfile } from './types/api';
 
-function MainApp() {
+// Layouts
+import { DashboardLayout } from './layouts/DashboardLayout';
+
+// Pages
+import { LandingPage } from './pages/LandingPage';
+import { AuthPage } from './pages/AuthPage';
+import { StudioPage } from './pages/StudioPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { ApplicationsPage } from './pages/ApplicationsPage';
+import { AgentHubPage } from './pages/AgentHubPage';
+
+export type Page = 'landing' | 'auth' | 'studio' | 'profile' | 'applications' | 'agent-hub';
+
+function AppRouter() {
   const { isAuthenticated } = useAuth();
-  const [view, setView] = useState<'landing' | 'dashboard'>(isAuthenticated ? 'dashboard' : 'landing');
-  const [currentTab, setCurrentTab] = useState<DashboardTab>('studio');
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [profile, setProfile] = useState<MasterProfile | null>(null);
-  const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
+  const [page, setPage] = useState<Page>('landing');
 
-  // Sync view when auth changes
-  useEffect(() => {
-    if (isAuthenticated) {
-      setView('dashboard');
+  const navigate = (to: Page) => {
+    if ((to === 'studio' || to === 'profile' || to === 'applications' || to === 'agent-hub') && !isAuthenticated) {
+      setPage('auth');
+    } else {
+      setPage(to);
     }
-  }, [isAuthenticated]);
+  };
 
-  // Initial health check and profile fetch
-  useEffect(() => {
-    async function init() {
-      try {
-        await api.checkHealth();
-        setIsBackendHealthy(true);
-      } catch {
-        setIsBackendHealthy(false);
-      }
+  if (page === 'landing') return <LandingPage onNavigate={navigate} />;
+  if (page === 'auth') return <AuthPage onNavigate={navigate} />;
 
-      try {
-        const p = await api.fetchProfile('alex_mercer_canonical');
-        setProfile(p);
-      } catch (err) {
-        console.warn('Initial profile load notice:', err);
-      }
-    }
-    init();
-  }, []);
+  // Dashboard pages
+  const dashboardPages: Record<string, React.ReactNode> = {
+    studio: <StudioPage />,
+    profile: <ProfilePage />,
+    applications: <ApplicationsPage onNavigate={navigate} />,
+    'agent-hub': <AgentHubPage />,
+  };
+
+  const currentPage = (page as string) in dashboardPages ? page : 'studio';
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {view === 'landing' ? (
-        <LandingPage
-          onLaunchStudio={() => setView('dashboard')}
-          onOpenLogin={() => setIsAuthOpen(true)}
-        />
-      ) : (
-        <div className="h-full flex flex-col overflow-hidden">
-          <DashboardNav
-            currentTab={currentTab}
-            onSelectTab={setCurrentTab}
-            onGoLanding={() => setView('landing')}
-            isBackendHealthy={isBackendHealthy}
-          />
-
-          <main className="flex-1 flex overflow-hidden">
-            {currentTab === 'studio' && (
-              <StudioView
-                profile={profile}
-                onUpdateProfile={(p) => setProfile(p)}
-              />
-            )}
-            {currentTab === 'profile' && (
-              <ProfileView
-                profile={profile}
-                onUpdateProfile={(p) => setProfile(p)}
-              />
-            )}
-            {currentTab === 'applications' && (
-              <ApplicationsView
-                onOpenStudioForTailoring={() => setCurrentTab('studio')}
-              />
-            )}
-            {currentTab === 'agent-hub' && <AgentHubView />}
-          </main>
-        </div>
-      )}
-
-      {/* Global Authentication Modal */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        onSuccess={() => setView('dashboard')}
-      />
-    </div>
+    <DashboardLayout currentPage={currentPage as Page} onNavigate={navigate}>
+      {dashboardPages[currentPage]}
+    </DashboardLayout>
   );
 }
 
-export function App() {
+function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <AppRouter />
     </AuthProvider>
   );
 }
