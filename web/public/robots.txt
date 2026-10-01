@@ -1,0 +1,26 @@
+# Saccade Robots Configuration
+# https://saccade.studio
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /output/
+
+# AI Search Crawlers & Assistive Agents (Allowed for Indexing & Summarization)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# XML Sitemap
+Sitemap: https://saccade.studio/sitemap.xml

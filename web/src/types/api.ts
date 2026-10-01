@@ -5,13 +5,17 @@ export type DocumentType = 'resume' | 'cv' | 'cover_letter' | 'biosketch';
 export interface AtsAuditResult {
   overall_score: number;
   keyword_score: number;
-  format_score: number;
+  formatting_score?: number;
+  format_score?: number;
   reading_order_passed: boolean;
+  honesty_score?: number;
+  impact_score?: number;
+  page_budget_score?: number;
   matched_keywords: string[];
   missing_keywords: string[];
-  critical_issues: string[];
-  formatting_warnings: string[];
-  recommendations: string[];
+  critical_issues?: string[];
+  formatting_warnings?: string[];
+  recommendations?: string[];
 }
 
 export interface TailorResponse {

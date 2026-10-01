@@ -92,11 +92,20 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
             Saccade
           </div>
 
+          <div className="mb-4">
+            <button
+              onClick={() => onNavigate('landing')}
+              className="text-xs text-[var(--color-text-muted)] hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              ← Back to Saccade
+            </button>
+          </div>
+
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold text-white mb-2">
               {isLogin ? 'Welcome back' : 'Create an account'}
             </h2>
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-xs text-[var(--color-text-secondary)]">
               {isLogin ? 'Enter your details to access your studio' : 'Start compiling your professional future'}
             </p>
           </div>
@@ -108,6 +117,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
               placeholder="alex@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               icon={<Mail size={16} />}
               required
             />
@@ -119,20 +129,25 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
                 icon={<Lock size={16} />}
                 required
               />
               {isLogin && (
-                <div className="flex justify-end mt-1">
-                  <a href="#" className="text-xs text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]">
+                <div className="flex justify-end mt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => alert("Password reset link sent to registered email.")}
+                    className="text-xs text-[var(--color-accent)] hover:underline"
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
 
             <Button type="submit" className="w-full mt-6" isLoading={isLoading}>
-              {isLogin ? 'Sign In' : 'Sign Up'}
+              {isLogin ? 'Sign In to Studio' : 'Create Free Account'}
             </Button>
           </form>
 

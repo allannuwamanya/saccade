@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, AliasChoices
 
 from core.constants import LLMProviderType
 
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # LLM Provider Configuration
     llm_provider: LLMProviderType = Field(
         default=LLMProviderType.MOCK,
-        alias="SACCADE_LLM_PROVIDER"
+        validation_alias=AliasChoices("SACCADE_LLM_PROVIDER", "LLM_PROVIDER")
     )
 
     # API Keys

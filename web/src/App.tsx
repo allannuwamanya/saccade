@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Layouts
@@ -37,6 +37,26 @@ export type Page =
 function AppRouter() {
   const { isAuthenticated } = useAuth();
   const [page, setPage] = useState<Page>('landing');
+
+  useEffect(() => {
+    const titles: Record<Page, string> = {
+      landing: 'Saccade | AI-Native LaTeX Resume & Career Intelligence Engine',
+      auth: 'Sign In / Register | Saccade Studio',
+      home: 'Command Center | Saccade Studio',
+      profile: 'Master Career Profile | Saccade Studio',
+      'knowledge-base': 'Knowledge Base & Truth Anchor | Saccade Studio',
+      documents: 'Document Library | Saccade Studio',
+      studio: 'AI Tailoring Studio | Saccade Studio',
+      templates: 'LaTeX Themes & Page Budgets | Saccade Studio',
+      applications: 'Applications Pipeline | Saccade Studio',
+      companies: 'Target Companies & Recruiter CRM | Saccade Studio',
+      analytics: 'Performance & Analytics | Saccade Studio',
+      'agent-hub': 'FastMCP Agent Hub | Saccade Studio',
+      settings: 'Settings & Integrations | Saccade Studio',
+    };
+    document.title = titles[page] || 'Saccade Studio';
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [page]);
 
   const navigate = (to: Page) => {
     if (to === 'landing' || to === 'auth') {

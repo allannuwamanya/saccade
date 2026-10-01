@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import './styles/design-tokens.css';
 
 @tailwind base;
@@ -6,15 +5,21 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   html {
     scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     background-color: var(--color-bg);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     min-height: 100vh;
   }
@@ -22,12 +27,30 @@
   #root {
     min-height: 100vh;
   }
+
+  /* Universal focus-visible for WCAG 2.2 Level AA keyboard navigation */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Accessible touch targets on coarse pointer devices */
+  @media (pointer: coarse) {
+    button, a, input, select, textarea {
+      touch-action: manipulation;
+    }
+  }
 }
 
-/* Custom scrollbar */
+/* Modern thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -35,10 +58,26 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-full);
+  background: #3f3f46;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: #71717a;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

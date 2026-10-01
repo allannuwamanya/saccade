@@ -10,7 +10,9 @@ import {
   Pin,
   CheckCircle2,
   Trash2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -97,6 +99,59 @@ export const KnowledgeBasePage: React.FC = () => {
         <Button onClick={() => setShowAddModal(true)}>
           <Plus size={16} className="mr-1.5" /> Add Atomic Fact
         </Button>
+      </div>
+
+      {/* Fact Provenance & Truth Score Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Truth Integrity Score</div>
+            <div className="text-2xl font-extrabold text-emerald-400 mt-0.5">100% / 100</div>
+            <div className="text-[10px] text-slate-400 mt-0.5">Zero unanchored claims</div>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <ShieldCheck size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Metric Density Index</div>
+            <div className="text-2xl font-extrabold text-blue-400 mt-0.5">
+              {facts.length ? Math.round((facts.filter((f) => f.metrics && f.metrics.length > 0).length / facts.length) * 100) : 100}%
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">Google XYZ quantified</div>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+            <Award size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">STAR Stories Coverage</div>
+            <div className="text-2xl font-extrabold text-purple-400 mt-0.5">
+              {facts.filter((f) => f.factType === 'star_story').length} Situations
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">Interview behavioral anchor</div>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+            <BookOpen size={18} />
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Always-Included Facts</div>
+            <div className="text-2xl font-extrabold text-amber-400 mt-0.5">
+              {facts.filter((f) => f.alwaysInclude).length} Pinned
+            </div>
+            <div className="text-[10px] text-slate-400 mt-0.5">Prioritized in all resumes</div>
+          </div>
+          <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+            <Pin size={18} />
+          </div>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

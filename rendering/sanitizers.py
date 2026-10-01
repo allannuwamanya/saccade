@@ -19,11 +19,20 @@ def escape_latex(text: Union[str, Any]) -> str:
     """Safely escapes all LaTeX special characters in a given string.
 
     Leaves non-string types converted to string safely.
+    Preserves paragraph breaks for cover letters and summaries.
     """
     if text is None:
         return ""
     if not isinstance(text, str):
         text = str(text)
+
+    # Normalize Windows line endings
+    text = text.replace("\r\n", "\n")
+
+    # If the text has multiple paragraphs, escape each paragraph independently
+    if "\n\n" in text:
+        paragraphs = re.split(r"\n\s*\n+", text)
+        return "\n\n".join(escape_latex(p) for p in paragraphs if p.strip())
 
     # Apply character substitutions in strict order (\ must be replaced first)
     for pattern, replacement in LATEX_SUBS:

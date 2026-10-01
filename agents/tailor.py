@@ -67,10 +67,21 @@ class TailoringAgent:
         scored_work.sort(key=lambda x: x[0], reverse=True)
         tailored.work = [w for _, w in scored_work[:max_work_items]]
 
-        # 5. Prioritize Skills matching the job
+        # 5. Prioritize Skills matching the job and incorporate verified domain synonyms
+        from agents.ats_checker import ATSCheckerAgent
         for skill_group in tailored.skills:
             matching = [k for k in skill_group.keywords if k.lower() in job_keywords]
             other = [k for k in skill_group.keywords if k.lower() not in job_keywords]
+
+            # Promote verified domain synonyms matching target role
+            for kw in job.keywords + job.required_skills + job.preferred_skills:
+                kw_lower = kw.lower().strip()
+                if kw_lower in ATSCheckerAgent.DOMAIN_SYNONYMS:
+                    synonyms = ATSCheckerAgent.DOMAIN_SYNONYMS[kw_lower]
+                    if any(any(syn in k.lower() for k in skill_group.keywords) for syn in synonyms):
+                        if not any(k.lower() == kw_lower for k in matching):
+                            matching.append(kw.title() if kw.islower() else kw)
+
             skill_group.keywords = matching + other
 
         return tailored, gaps
