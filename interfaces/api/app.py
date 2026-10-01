@@ -235,7 +235,7 @@ async def serve_pdf(filename: str):
 class AiStreamRequest(BaseModel):
     prompt: str
     system_prompt: Optional[str] = None
-    provider: Optional[str] = "openai"
+    provider: Optional[str] = "openrouter"
     model: Optional[str] = None
     api_key: Optional[str] = None
     current_latex: Optional[str] = None
@@ -258,12 +258,20 @@ async def ai_stream(req: AiStreamRequest):
             api_key = os.environ.get("OPENROUTER_API_KEY")
         elif provider == "openai":
             api_key = os.environ.get("OPENAI_API_KEY")
+            if not api_key and os.environ.get("OPENROUTER_API_KEY"):
+                provider = "openrouter"
+                api_key = os.environ.get("OPENROUTER_API_KEY")
         elif provider == "anthropic":
             api_key = os.environ.get("ANTHROPIC_API_KEY")
         elif provider == "gemini":
             api_key = os.environ.get("GEMINI_API_KEY")
         else:
             api_key = os.environ.get("OPENROUTER_API_KEY")
+            provider = "openrouter"
+
+    if not api_key and os.environ.get("OPENROUTER_API_KEY"):
+        provider = "openrouter"
+        api_key = os.environ.get("OPENROUTER_API_KEY")
 
     async def event_generator():
         if api_key and provider == "openai":
