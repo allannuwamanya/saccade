@@ -11,7 +11,8 @@ import {
   Check,
   Save,
   Cpu,
-  RefreshCw
+  RefreshCw,
+  ShieldCheck
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -71,7 +72,7 @@ export const SettingsPage: React.FC = () => {
   const [copiedSql, setCopiedSql] = useState(false);
 
   // Model settings
-  const [provider, setProvider] = useState<'mock' | 'anthropic' | 'openai' | 'gemini' | 'ollama'>('mock');
+  const [provider, setProvider] = useState<'openrouter' | 'anthropic' | 'openai' | 'gemini' | 'ollama'>('openrouter');
   const [apiKey, setApiKey] = useState('');
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export const SettingsPage: React.FC = () => {
     setSupabaseUrl(config.url);
     setSupabaseKey(config.key);
 
-    const savedProvider = localStorage.getItem('saccade_llm_provider') || 'mock';
+    const savedProvider = localStorage.getItem('saccade_llm_provider') || 'openrouter';
     const savedApiKey = localStorage.getItem('saccade_llm_key') || '';
     setProvider(savedProvider as any);
     setApiKey(savedApiKey);
@@ -272,23 +273,31 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* AI Model Settings (BYOK) */}
-      <div className="p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] space-y-6">
+      <div className="p-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[var(--color-accent)]/10 text-[var(--color-accent)] flex items-center justify-center">
             <Cpu size={20} />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">AI Engine & Model Provider (BYOK)</h2>
+            <h2 className="text-base font-bold text-white">AI Engine & Model Provider</h2>
             <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-              Select which LLM powers the job description parser, STAR writer, and ATS auditor.
+              Configure frontier and open-weights models powering resume tailoring, bullet drafting, and ATS scoring.
             </p>
+          </div>
+        </div>
+
+        {/* Default System Key Status Banner */}
+        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2.5 text-xs text-emerald-300">
+          <ShieldCheck size={16} className="shrink-0 mt-0.5 text-emerald-400" />
+          <div className="leading-relaxed">
+            <strong className="text-white">Default System Engine Active:</strong> Saccade is fully operational out of the box with zero configuration required. The AI Resume Copilot streams from high-throughput models automatically. You do not need to provide an API key. Optional custom keys entered below will override the default engine for private billing.
           </div>
         </div>
 
         <form onSubmit={handleSaveModel} className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { id: 'mock', name: 'Mock Engine', sub: 'Instant Test Mode' },
+              { id: 'openrouter', name: 'OpenRouter (Default)', sub: 'Free & Frontier Models' },
               { id: 'anthropic', name: 'Anthropic', sub: 'Claude 3.5 Sonnet' },
               { id: 'openai', name: 'OpenAI', sub: 'GPT-4o' },
               { id: 'gemini', name: 'Google Gemini', sub: 'Gemini 1.5 Pro' },
@@ -310,14 +319,21 @@ export const SettingsPage: React.FC = () => {
             ))}
           </div>
 
-          {provider !== 'mock' && provider !== 'ollama' && (
+          {provider !== 'ollama' && (
             <div>
-              <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
-                {provider.toUpperCase()} API Key
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">
+                  {provider.toUpperCase()} Custom API Key (Optional)
+                </label>
+                {provider === 'openrouter' && (
+                  <span className="text-[10px] text-zinc-500">
+                    Leave blank to use default system key
+                  </span>
+                )}
+              </div>
               <input
                 type="password"
-                placeholder="sk-..."
+                placeholder={provider === 'openrouter' ? 'Default system key active (or paste custom sk-or-v1-...)' : 'sk-...'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-white placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]"
@@ -327,7 +343,7 @@ export const SettingsPage: React.FC = () => {
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="sm">
-              <Save size={14} className="mr-1.5" /> Save AI Provider
+              <Save size={14} className="mr-1.5" /> Save Provider Preferences
             </Button>
           </div>
         </form>

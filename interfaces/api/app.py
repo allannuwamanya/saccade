@@ -251,15 +251,19 @@ async def ai_stream(req: AiStreamRequest):
     )
 
     api_key = req.api_key
-    provider = (req.provider or "openai").lower()
+    provider = (req.provider or "openrouter").lower()
 
     if not api_key:
-        if provider == "openai":
+        if provider == "openrouter":
+            api_key = os.environ.get("OPENROUTER_API_KEY")
+        elif provider == "openai":
             api_key = os.environ.get("OPENAI_API_KEY")
         elif provider == "anthropic":
             api_key = os.environ.get("ANTHROPIC_API_KEY")
         elif provider == "gemini":
             api_key = os.environ.get("GEMINI_API_KEY")
+        else:
+            api_key = os.environ.get("OPENROUTER_API_KEY")
 
     async def event_generator():
         if api_key and provider == "openai":
@@ -365,12 +369,23 @@ async def ai_stream(req: AiStreamRequest):
             headers = {
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://saccade.studio",
+                "HTTP-Referer": "https://saccade.langratia.com",
                 "X-Title": "Saccade Studio"
             }
-            messages = [{"role": "system", "content": system}, {"role": "user", "content": req.prompt}]
+            messages = [{"role": "system", "content": system}]
+            if req.current_latex:
+                messages.append({
+                    "role": "user",
+                    "content": f"Current LaTeX resume:\n```latex\n{req.current_latex}\n```"
+                })
+                messages.append({
+                    "role": "assistant",
+                    "content": "I have loaded your current LaTeX resume. How should I tailor or improve it?"
+                })
+            messages.append({"role": "user", "content": req.prompt})
+
             payload = {
-                "model": req.model or "anthropic/claude-3.5-sonnet",
+                "model": req.model or "openrouter/free",
                 "messages": messages,
                 "stream": True
             }
@@ -401,9 +416,8 @@ async def ai_stream(req: AiStreamRequest):
         else:
             simulated = (
                 f"Analyzing and tailoring resume for: \"{req.prompt}\".\n\n"
-                "Refined bullet points to highlight high-concurrency systems, P99 latency SLA targets, and distributed consensus (Raft/Paxos). "
-                "Single-page line budget maintained at 48/52 lines.\n\n"
-                "Tip: Add your custom BYOK key in the Copilot header to stream directly from frontier LLMs."
+                "Refined bullet points to highlight high-concurrency systems, P99 latency SLA targets, and distributed consensus. "
+                "Single-page line budget maintained and ATS keywords synchronized."
             )
             for word in simulated.split(" "):
                 yield f"data: {json.dumps({'token': word + ' '})}\n\n"

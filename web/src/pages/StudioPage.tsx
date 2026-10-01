@@ -18,7 +18,6 @@ import {
   Minimize2,
   PanelLeftClose,
   PanelLeftOpen,
-  Key,
   RotateCcw,
   ZoomIn,
   ZoomOut,
@@ -32,8 +31,6 @@ import { Badge } from '../components/ui/Badge';
 import { Spinner } from '../components/ui/Spinner';
 import { api } from '../services/api';
 import { SupabaseService, DocumentItem, Project } from '../services/supabase';
-import { ByokService, ByokConfig } from '../services/byok';
-import { ByokModal } from '../components/ByokModal';
 import { streamAiGeneration } from '../services/aiStream';
 
 type LayoutMode = 'split' | 'editor' | 'preview';
@@ -95,9 +92,7 @@ export const StudioPage: React.FC = () => {
   const [compileTime, setCompileTime] = useState<number | null>(340);
   const [atsScore, setAtsScore] = useState<number | null>(98);
 
-  // BYOK & Streaming chat states
-  const [isByokOpen, setIsByokOpen] = useState(false);
-  const [byokConfig, setByokConfig] = useState<ByokConfig>(ByokService.getConfig());
+  // Streaming chat states
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([
@@ -200,7 +195,7 @@ export const StudioPage: React.FC = () => {
         setIsWritingLatexToEditor(false);
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', text: `⚠️ Error: ${errMsg}. Check your BYOK key or select a Free model in BYOK settings.` }
+          { role: 'assistant', text: `⚠️ Error: ${errMsg}. Please try again.` }
         ]);
       },
       onDone: ({ chatText, latexCode }) => {
@@ -315,20 +310,8 @@ export const StudioPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Right Actions: BYOK Key & Compile */}
+        {/* Right Actions: Compile */}
         <div className="flex items-center gap-2">
-          {/* BYOK Status Button */}
-          <button
-            onClick={() => setIsByokOpen(true)}
-            className="px-2.5 py-1 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors"
-            title="Configure BYOK API Key"
-          >
-            <Key size={13} className={byokConfig.apiKey ? 'text-emerald-400' : 'text-zinc-500'} />
-            <span className="hidden sm:inline font-mono text-[11px]">
-              {byokConfig.apiKey ? byokConfig.provider.toUpperCase() : 'Set API Key'}
-            </span>
-          </button>
-
           {/* Compile Button */}
           <Button
             size="sm"
@@ -387,9 +370,9 @@ export const StudioPage: React.FC = () => {
           <div className="h-10 px-3.5 border-b border-[var(--color-border-subtle)] flex items-center justify-between bg-[var(--color-surface-2)]/30 shrink-0">
             <div className="flex items-center gap-2">
               <Bot size={15} className="text-[var(--color-accent)]" />
-              <span className="text-xs font-semibold text-white">AI Copilot</span>
-              <span className="text-[10px] text-zinc-500 font-mono">
-                ({byokConfig.model})
+              <span className="text-xs font-semibold text-white">AI Resume Copilot</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9.5px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                Online
               </span>
             </div>
 
@@ -468,12 +451,7 @@ export const StudioPage: React.FC = () => {
             </div>
             <div className="flex items-center justify-between text-[10px] text-zinc-500 px-1">
               <span>Press <kbd className="font-mono text-zinc-400">Enter</kbd> to send</span>
-              <button
-                onClick={() => setIsByokOpen(true)}
-                className="hover:text-zinc-300 underline font-mono"
-              >
-                BYOK: {byokConfig.provider}
-              </button>
+              <span className="text-zinc-500">Autonomous LaTeX Engine</span>
             </div>
           </div>
         </div>
@@ -726,12 +704,6 @@ export const StudioPage: React.FC = () => {
         </div>
       </div>
 
-      {/* BYOK Key Modal */}
-      <ByokModal
-        isOpen={isByokOpen}
-        onClose={() => setIsByokOpen(false)}
-        onSaved={(newConfig) => setByokConfig(newConfig)}
-      />
     </div>
   );
 };
