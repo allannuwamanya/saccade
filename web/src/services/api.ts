@@ -1,6 +1,11 @@
 import { MasterProfile, RenderResponse, TailorResponse, ThemeName, DocumentType } from '../types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+export const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''
+    : 'https://saccade-jbr9.onrender.com');
 
 export const api = {
   async checkHealth(): Promise<{ status: string; service: string; compiler: string }> {
@@ -50,7 +55,11 @@ export const api = {
       const err = await res.json().catch(() => ({ detail: 'Raw LaTeX compilation failed' }));
       throw new Error(err.detail || 'Raw LaTeX compilation failed');
     }
-    return res.json();
+    const data: RenderResponse = await res.json();
+    if (data.pdf_url && !data.pdf_url.startsWith('http')) {
+      data.pdf_url = `${API_BASE}${data.pdf_url}`;
+    }
+    return data;
   },
 
   async renderDocument(
@@ -71,7 +80,11 @@ export const api = {
       const err = await res.json().catch(() => ({ detail: 'Render failed' }));
       throw new Error(err.detail || 'Render failed');
     }
-    return res.json();
+    const data: RenderResponse = await res.json();
+    if (data.pdf_url && !data.pdf_url.startsWith('http')) {
+      data.pdf_url = `${API_BASE}${data.pdf_url}`;
+    }
+    return data;
   },
 
   async tailorDocument(

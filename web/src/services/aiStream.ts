@@ -1,4 +1,5 @@
 import { ByokService, ByokConfig } from './byok';
+import { API_BASE } from './api';
 
 export interface StreamParseResult {
   chatText: string;
@@ -116,7 +117,7 @@ export async function streamAiGeneration(options: StreamOptions): Promise<void> 
   if (byok.provider === 'openrouter' && byok.apiKey && byok.apiKey.trim().length > 5) {
     try {
       const defaultSystemPrompt =
-        'You are an expert LaTeX Resume Engineer and Career Copilot. Always provide concise, high-value advice. When modifying or generating resume code, output the full compilable LaTeX code inside a ```latex code block. Adhere to single-page line budgets and quantified Google XYZ achievements.';
+        'You are an expert LaTeX Resume Engineer and Career Copilot. If the user greets you (e.g. "hello", "hi") or asks general questions or advice, respond purely conversationally in the chat. Do NOT output any ```latex code block unless the user explicitly asks to edit, rewrite, tailor, update, or generate resume code.';
 
       const messages: any[] = [
         { role: 'system', content: systemPrompt || defaultSystemPrompt }
@@ -197,7 +198,7 @@ export async function streamAiGeneration(options: StreamOptions): Promise<void> 
 
   // 2. Backend streaming proxy fallback (/api/ai/stream)
   try {
-    const res = await fetch('/api/ai/stream', {
+    const res = await fetch(`${API_BASE}/api/ai/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

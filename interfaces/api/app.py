@@ -167,18 +167,23 @@ async def tailor_application(req: TailorRequest):
 
 
 class RenderRawRequest(BaseModel):
-    latex_source: str
+    latex_source: Optional[str] = None
+    latex: Optional[str] = None
     document_name: str = "custom_document"
 
 
 @app.post("/api/render/raw")
 async def render_raw_latex(req: RenderRawRequest):
+    source = req.latex_source or req.latex or ""
+    if not source.strip():
+        raise HTTPException(status_code=400, detail="Empty LaTeX source provided")
+
     import hashlib
-    h = hashlib.md5(req.latex_source.encode("utf-8")).hexdigest()[:8]
+    h = hashlib.md5(source.encode("utf-8")).hexdigest()[:8]
     filename = f"render_raw_{h}.pdf"
     out_path = OUTPUT_DIR / filename
 
-    res = compiler.compile(req.latex_source, output_pdf_path=str(out_path))
+    res = compiler.compile(source, output_pdf_path=str(out_path))
     if not res.success:
         raise HTTPException(status_code=500, detail=f"LaTeX compilation failed: {res.compilation_log}")
 
@@ -186,7 +191,7 @@ async def render_raw_latex(req: RenderRawRequest):
         "status": "success",
         "pdf_url": f"/api/pdf/{filename}",
         "compile_time": res.compile_time_seconds,
-        "latex_source": req.latex_source
+        "latex_source": source
     }
 
 
@@ -245,9 +250,9 @@ class AiStreamRequest(BaseModel):
 async def ai_stream(req: AiStreamRequest):
     system = req.system_prompt or (
         "You are an expert AI LaTeX Resume and Career Document Copilot. "
-        "When the user requests changes, improvements, or tailoring, explain what you improved "
-        "and provide the complete or updated LaTeX document inside a ```latex code block. "
-        "Ensure single-page line budget adherence and ATS compliance with quantified metrics."
+        "If the user greets you (e.g. 'hello', 'hi') or asks general questions or career advice, respond purely conversationally in the chat. "
+        "Do NOT output a ```latex code block unless the user explicitly requests changes, improvements, tailoring, or edits to their resume. "
+        "When the user does request changes or tailoring, explain what you improved and provide the complete updated LaTeX document inside a ```latex code block."
     )
 
     api_key = req.api_key
