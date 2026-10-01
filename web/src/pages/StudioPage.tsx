@@ -157,7 +157,9 @@ export const StudioPage: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
 
-  // AI Chat Submission with Streaming
+  const [isWritingLatexToEditor, setIsWritingLatexToEditor] = useState(false);
+
+  // AI Chat Submission with Streaming Token Demuxing
   const handleSendMessage = async () => {
     if (!chatInput.trim() || isStreaming) return;
 
@@ -165,45 +167,63 @@ export const StudioPage: React.FC = () => {
     setChatInput('');
     setMessages((prev) => [...prev, { role: 'user', text: userPrompt }]);
     setIsStreaming(true);
+    setIsWritingLatexToEditor(false);
 
     // Placeholder for streaming assistant response
     setMessages((prev) => [...prev, { role: 'assistant', text: '' }]);
 
     await streamAiGeneration({
       prompt: userPrompt,
-      systemPrompt: `You are an expert LaTeX Resume Engineer and Career Copilot. Provide concise, high-value advice and, when modifying or generating resume code, provide the complete updated LaTeX code inside a \`\`\`latex code block. Adhere to single-page line budgets and quantified Google XYZ achievements.`,
+      systemPrompt: `You are an expert LaTeX Resume Engineer and Career Copilot. Always provide concise, high-value advice. When modifying or generating resume code, output the full updated code inside a \`\`\`latex code block. Adhere to single-page line budgets and quantified Google XYZ achievements.`,
       currentLatex: latexSource,
-      onToken: (token) => {
+      onChatText: (chatText, isWritingLatex) => {
+        setIsWritingLatexToEditor(isWritingLatex);
         setMessages((prev) => {
           const updated = [...prev];
           const lastIdx = updated.length - 1;
           if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+            const displayChat = chatText || (isWritingLatex ? '⚡ Generating LaTeX code directly into the editor...' : 'Thinking...');
             updated[lastIdx] = {
               ...updated[lastIdx],
-              text: updated[lastIdx].text + token
+              text: displayChat
             };
           }
           return updated;
         });
       },
       onLatexChunk: (streamedLatex) => {
+        // Stream LaTeX directly into the editor canvas in real time
         setLatexSource(streamedLatex);
       },
       onError: (errMsg) => {
         setIsStreaming(false);
+        setIsWritingLatexToEditor(false);
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', text: `⚠️ Error: ${errMsg}. Check your BYOK key or try again.` }
+          { role: 'assistant', text: `⚠️ Error: ${errMsg}. Check your BYOK key or select a Free model in BYOK settings.` }
         ]);
       },
-      onDone: (fullResponse) => {
+      onDone: ({ chatText, latexCode }) => {
         setIsStreaming(false);
-        // If the response contained LaTeX, trigger compile
-        const match = fullResponse.match(/```(?:latex)?\s*([\s\S]*?)```/i);
-        if (match && match[1] && match[1].includes('\\documentclass')) {
-          const code = match[1].trim();
-          setLatexSource(code);
-          compilePdf(code);
+        setIsWritingLatexToEditor(false);
+        setMessages((prev) => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+            const finalNote = latexCode
+              ? `${chatText ? chatText + '\n\n' : ''}✨ *LaTeX updated in editor & compiled to PDF.*`
+              : chatText;
+            updated[lastIdx] = {
+              ...updated[lastIdx],
+              text: finalNote || 'Done!'
+            };
+          }
+          return updated;
+        });
+
+        if (latexCode) {
+          setLatexSource(latexCode);
+          compilePdf(latexCode);
         }
       }
     });
@@ -408,7 +428,11 @@ export const StudioPage: React.FC = () => {
               <div className="flex items-start">
                 <div className="px-3.5 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] flex items-center gap-2 text-xs text-zinc-300">
                   <Spinner size="sm" />
-                  <span>Streaming tokens...</span>
+                  <span>
+                    {isWritingLatexToEditor
+                      ? '⚡ Streaming LaTeX directly to editor...'
+                      : 'Generating response...'}
+                  </span>
                 </div>
               </div>
             )}
@@ -475,12 +499,20 @@ export const StudioPage: React.FC = () => {
             <div className="flex items-center gap-1.5">
               {/* Maximize / Split Button */}
               <button
-                onClick={() => setLayoutMode(layoutMode === 'editor' ? 'split' : 'editor')}
+                onClick={() => {
+                  if (layoutMode === 'editor' && !isChatOpen) {
+                    setLayoutMode('split');
+                    setIsChatOpen(true);
+                  } else {
+                    setLayoutMode('editor');
+                    setIsChatOpen(false);
+                  }
+                }}
                 className="p-1 rounded text-zinc-400 hover:text-white hover:bg-[var(--color-surface-2)]"
-                title={layoutMode === 'editor' ? 'Return to Split View' : 'Extend Editor to Full Width'}
+                title={layoutMode === 'editor' && !isChatOpen ? 'Return to Split View' : 'Extend Editor to 100% Full Width'}
                 aria-label="Toggle editor full width"
               >
-                {layoutMode === 'editor' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                {layoutMode === 'editor' && !isChatOpen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
             </div>
           </div>
@@ -512,7 +544,13 @@ export const StudioPage: React.FC = () => {
 
           {/* Editor Status Footer */}
           <div className="h-6 border-t border-zinc-800/80 bg-[#09090c] px-3 flex items-center justify-between text-[10.5px] text-zinc-500 font-mono shrink-0">
-            <span>Tectonic LaTeX Engine</span>
+            {isWritingLatexToEditor ? (
+              <span className="text-indigo-400 flex items-center gap-1.5 animate-pulse">
+                <Sparkles size={11} /> AI Streaming LaTeX to Editor...
+              </span>
+            ) : (
+              <span>Tectonic LaTeX Engine</span>
+            )}
             <span>Single Page Line Budget: OK</span>
           </div>
         </div>
@@ -589,12 +627,20 @@ export const StudioPage: React.FC = () => {
 
               {/* Maximize / Split Button */}
               <button
-                onClick={() => setLayoutMode(layoutMode === 'preview' ? 'split' : 'preview')}
+                onClick={() => {
+                  if (layoutMode === 'preview' && !isChatOpen) {
+                    setLayoutMode('split');
+                    setIsChatOpen(true);
+                  } else {
+                    setLayoutMode('preview');
+                    setIsChatOpen(false);
+                  }
+                }}
                 className="p-1 rounded text-zinc-400 hover:text-white hover:bg-[var(--color-surface-2)]"
-                title={layoutMode === 'preview' ? 'Return to Split View' : 'Extend Preview to Full Width'}
+                title={layoutMode === 'preview' && !isChatOpen ? 'Return to Split View' : 'Extend Preview to 100% Full Width'}
                 aria-label="Toggle preview full width"
               >
-                {layoutMode === 'preview' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                {layoutMode === 'preview' && !isChatOpen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               </button>
             </div>
           </div>
