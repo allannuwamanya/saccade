@@ -72,7 +72,7 @@ class SaccadeOrchestrator:
         tailored_profile, gaps = TailoringAgent.tailor(profile, job)
 
         # 4. Polish Bullets with Honesty Guardrail
-        polished_profile = await STARWriterAgent.polish_highlights(profile, tailored_profile, job)
+        polished_profile = STARWriterAgent.polish_highlights(profile, tailored_profile, job)
 
         # 5. Page Budget Optimization
         style = PageBudgetEngine.suggest_style_options(polished_profile, target_pages=1)

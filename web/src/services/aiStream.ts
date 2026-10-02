@@ -198,18 +198,20 @@ export async function streamAiGeneration(options: StreamOptions): Promise<void> 
 
   // 2. Backend streaming proxy fallback (/api/ai/stream)
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (byok.apiKey && byok.apiKey.trim().length > 5) {
+      headers['Authorization'] = `Bearer ${byok.apiKey.trim()}`;
+    }
+
     const res = await fetch(`${API_BASE}/api/ai/stream`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
         prompt,
         system_prompt: systemPrompt,
         provider: byok.provider,
         model: byok.model,
-        api_key: byok.apiKey || undefined,
-        current_latex: currentLatex
+        current_latex: currentLatex,
       })
     });
 

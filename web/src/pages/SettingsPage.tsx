@@ -17,6 +17,8 @@ import {
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { SupabaseService } from '../services/supabase';
+import { ByokService } from '../services/byok';
+import type { AiProvider } from '../services/byok';
 
 const SUPABASE_SCHEMA_SQL = `-- Saccade Supabase Schema
 CREATE TABLE IF NOT EXISTS profiles (
@@ -66,37 +68,44 @@ CREATE TABLE IF NOT EXISTS documents (
 );`;
 
 export const SettingsPage: React.FC = () => {
-  const [supabaseUrl, setSupabaseUrl] = useState('');
-  const [supabaseKey, setSupabaseKey] = useState('');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [copiedSql, setCopiedSql] = useState(false);
 
-  // Model settings
-  const [provider, setProvider] = useState<'openrouter' | 'anthropic' | 'openai' | 'gemini' | 'ollama'>('openrouter');
+  // Model settings — single source of truth via ByokService
+  const [provider, setProvider] = useState<AiProvider>('openrouter');
   const [apiKey, setApiKey] = useState('');
 
   useEffect(() => {
-    const config = SupabaseService.getConfig();
-    setSupabaseUrl(config.url);
-    setSupabaseKey(config.key);
+    // Migrate any stale saccade_llm_provider / saccade_llm_key entries to ByokService
+    const legacyProvider = localStorage.getItem('saccade_llm_provider');
+    const legacyKey = localStorage.getItem('saccade_llm_key');
+    if (legacyProvider && legacyKey) {
+      const validProviders: AiProvider[] = ['openrouter', 'anthropic', 'openai', 'gemini'];
+      const p = validProviders.includes(legacyProvider as AiProvider)
+        ? (legacyProvider as AiProvider)
+        : 'openrouter';
+      ByokService.saveConfig({ provider: p, apiKey: legacyKey, model: ByokService.getConfig().model });
+      localStorage.removeItem('saccade_llm_provider');
+      localStorage.removeItem('saccade_llm_key');
+    }
 
-    const savedProvider = localStorage.getItem('saccade_llm_provider') || 'openrouter';
-    const savedApiKey = localStorage.getItem('saccade_llm_key') || '';
-    setProvider(savedProvider as any);
-    setApiKey(savedApiKey);
+    const byok = ByokService.getConfig();
+    setProvider(byok.provider);
+    setApiKey(byok.apiKey);
   }, []);
 
   const handleSaveSupabase = (e: React.FormEvent) => {
     e.preventDefault();
-    SupabaseService.saveConfig(supabaseUrl, supabaseKey);
-    setSaveStatus('Supabase configuration saved successfully.');
-    setTimeout(() => setSaveStatus(null), 3000);
+    // Supabase is now configured via build-time env vars (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY).
+    // Nothing to save at runtime.
+    setSaveStatus('Supabase is configured via environment variables. No runtime config needed.');
+    setTimeout(() => setSaveStatus(null), 4000);
   };
 
   const handleSaveModel = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('saccade_llm_provider', provider);
-    localStorage.setItem('saccade_llm_key', apiKey.trim());
+    const current = ByokService.getConfig();
+    ByokService.saveConfig({ ...current, provider, apiKey: apiKey.trim() });
     setSaveStatus('AI Model provider settings saved.');
     setTimeout(() => setSaveStatus(null), 3000);
   };
@@ -216,60 +225,32 @@ export const SettingsPage: React.FC = () => {
           </Badge>
         </div>
 
-        {!isConnected && (
-          <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 flex items-start gap-3 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            <AlertCircle size={16} className="text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              Currently running in <strong>Local Storage Sandbox mode</strong>. Your data is stored in your browser.
-              When ready, paste your Supabase Project URL and Public Anon Key below to enable cloud backup and multi-device sync.
-            </div>
+        <div className={`p-4 rounded-xl border flex items-start gap-3 text-xs leading-relaxed ${
+          isConnected
+            ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-300'
+            : 'border-amber-500/20 bg-amber-500/5 text-[var(--color-text-secondary)]'
+        }`}>
+          {isConnected
+            ? <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+            : <AlertCircle size={16} className="text-amber-400 shrink-0 mt-0.5" />}
+          <div>
+            {isConnected
+              ? <><strong className="text-white">Supabase connected</strong> via <code className="font-mono">VITE_SUPABASE_URL</code> / <code className="font-mono">VITE_SUPABASE_ANON_KEY</code> environment variables.</>
+              : <>Supabase is not yet configured. Add <code className="font-mono">VITE_SUPABASE_URL</code> and <code className="font-mono">VITE_SUPABASE_ANON_KEY</code> to your <code className="font-mono">web/.env.local</code> file (local dev) or Cloudflare Pages environment variables (production). Then run the SQL migration below to create the required tables.</>
+            }
           </div>
-        )}
+        </div>
 
-        <form onSubmit={handleSaveSupabase} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
-                Supabase Project URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://your-project.supabase.co"
-                value={supabaseUrl}
-                onChange={(e) => setSupabaseUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-white placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[var(--color-text-secondary)] mb-1">
-                Supabase Public Anon Key
-              </label>
-              <input
-                type="password"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                value={supabaseKey}
-                onChange={(e) => setSupabaseKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-white placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
-              onClick={handleCopySql}
-              className="text-xs text-[var(--color-accent)] hover:underline flex items-center gap-1.5"
-            >
-              {copiedSql ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-              {copiedSql ? 'Copied SQL migration script' : 'Copy Supabase SQL Tables Migration Script'}
-            </button>
-
-            <Button type="submit" size="sm">
-              <Save size={14} className="mr-1.5" /> Save Database Keys
-            </Button>
-          </div>
-        </form>
+        <div className="flex items-center justify-between pt-1">
+          <button
+            type="button"
+            onClick={handleCopySql}
+            className="text-xs text-[var(--color-accent)] hover:underline flex items-center gap-1.5"
+          >
+            {copiedSql ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+            {copiedSql ? 'Copied SQL migration script' : 'Copy Supabase SQL Tables Migration Script'}
+          </button>
+        </div>
       </div>
 
       {/* AI Model Settings (BYOK) */}
@@ -296,17 +277,16 @@ export const SettingsPage: React.FC = () => {
 
         <form onSubmit={handleSaveModel} className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {[
+            {([
               { id: 'openrouter', name: 'OpenRouter (Default)', sub: 'Free & Frontier Models' },
               { id: 'anthropic', name: 'Anthropic', sub: 'Claude 3.5 Sonnet' },
               { id: 'openai', name: 'OpenAI', sub: 'GPT-4o' },
               { id: 'gemini', name: 'Google Gemini', sub: 'Gemini 1.5 Pro' },
-              { id: 'ollama', name: 'Local Ollama', sub: 'Llama 3 (Private)' },
-            ].map((p) => (
+            ] as { id: AiProvider; name: string; sub: string }[]).map((p) => (
               <button
                 type="button"
                 key={p.id}
-                onClick={() => setProvider(p.id as any)}
+                onClick={() => setProvider(p.id)}
                 className={`p-3 rounded-xl border text-left transition-all ${
                   provider === p.id
                     ? 'border-[var(--color-accent)] bg-[var(--color-accent-subtle)] text-white'
@@ -319,27 +299,25 @@ export const SettingsPage: React.FC = () => {
             ))}
           </div>
 
-          {provider !== 'ollama' && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">
-                  {provider.toUpperCase()} Custom API Key (Optional)
-                </label>
-                {provider === 'openrouter' && (
-                  <span className="text-[10px] text-zinc-500">
-                    Leave blank to use default system key
-                  </span>
-                )}
-              </div>
-              <input
-                type="password"
-                placeholder={provider === 'openrouter' ? 'Default system key active (or paste custom sk-or-v1-...)' : 'sk-...'}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-white placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]"
-              />
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-[var(--color-text-secondary)]">
+                {provider.toUpperCase()} Custom API Key (Optional)
+              </label>
+              {provider === 'openrouter' && (
+                <span className="text-[10px] text-zinc-500">
+                  Leave blank to use default system key
+                </span>
+              )}
             </div>
-          )}
+            <input
+              type="password"
+              placeholder={provider === 'openrouter' ? 'Default system key active (or paste custom sk-or-v1-...)' : 'sk-...'}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-border)] text-xs text-white placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]"
+            />
+          </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="sm">

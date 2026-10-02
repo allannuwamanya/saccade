@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from core.models.profile import MasterProfile, WorkExperience, Skill
 from core.models.job import JobPosting
+from agents.ats_checker import ATSCheckerAgent
 
 
 class TailoringAgent:
@@ -68,7 +69,6 @@ class TailoringAgent:
         tailored.work = [w for _, w in scored_work[:max_work_items]]
 
         # 5. Prioritize Skills matching the job and incorporate verified domain synonyms
-        from agents.ats_checker import ATSCheckerAgent
         for skill_group in tailored.skills:
             matching = [k for k in skill_group.keywords if k.lower() in job_keywords]
             other = [k for k in skill_group.keywords if k.lower() not in job_keywords]

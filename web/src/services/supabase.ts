@@ -1,8 +1,10 @@
 /**
- * Supabase client & repository layer for Saccade
- * Supports direct connection to Supabase or persistent local fallback storage
- * when keys are not yet configured.
+ * Supabase client & repository layer for Saccade.
+ * Auth is handled via AuthContext + supabaseClient.ts.
+ * Data reads/writes for projects, documents, facts, companies, activities
+ * currently use localStorage as an offline-first store (TODO: migrate to Supabase tables).
  */
+import { supabase } from '../lib/supabaseClient';
 
 export interface Project {
   id: string;
@@ -75,8 +77,6 @@ export interface RecentActivityItem {
 }
 
 const STORAGE_KEYS = {
-  SUPABASE_URL: 'saccade_supabase_url',
-  SUPABASE_KEY: 'saccade_supabase_key',
   PROJECTS: 'saccade_projects',
   DOCUMENTS: 'saccade_documents',
   FACTS: 'saccade_facts',
@@ -310,22 +310,17 @@ const SEED_ACTIVITIES: RecentActivityItem[] = [
 ];
 
 export const SupabaseService = {
-  // Configuration getters and setters
-  getConfig() {
-    return {
-      url: localStorage.getItem(STORAGE_KEYS.SUPABASE_URL) || (import.meta as any).env?.VITE_SUPABASE_URL || '',
-      key: localStorage.getItem(STORAGE_KEYS.SUPABASE_KEY) || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '',
-    };
-  },
-
-  saveConfig(url: string, key: string) {
-    localStorage.setItem(STORAGE_KEYS.SUPABASE_URL, url.trim());
-    localStorage.setItem(STORAGE_KEYS.SUPABASE_KEY, key.trim());
-  },
-
+  // Auth is now managed by AuthContext + supabaseClient.ts.
+  // isConfigured reflects whether env vars are present.
   isConfigured(): boolean {
-    const { url, key } = this.getConfig();
-    return Boolean(url && key && url.startsWith('http'));
+    const url = import.meta.env.VITE_SUPABASE_URL as string;
+    const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    return Boolean(url && key && url.startsWith('https://'));
+  },
+
+  // Expose the client for callers that need direct Supabase queries.
+  getClient() {
+    return supabase;
   },
 
   // Projects / Applications

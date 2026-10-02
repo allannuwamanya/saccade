@@ -12,13 +12,13 @@ class STARWriterAgent:
     """Polishes candidate bullets into impact-driven XYZ statements and drafts cover letters."""
 
     @classmethod
-    async def polish_highlights(
+    def polish_highlights(
         cls,
         canonical_profile: MasterProfile,
         tailored_profile: MasterProfile,
         job: JobPosting
     ) -> MasterProfile:
-        """Polishes bullets in the tailored profile, strictly enforcing the honesty guardrail."""
+        """Cleans buzzwords and validates bullets against the honesty guardrail. AI rewriting is in generate_cover_letter."""
         fact_pool = HonestyGuardrail.extract_fact_pool(canonical_profile)
 
         for work in tailored_profile.work:

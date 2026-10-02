@@ -1,6 +1,7 @@
 """Application settings and environment configuration."""
 
 import os
+import warnings
 from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -45,3 +46,12 @@ class Settings(BaseSettings):
 
 # Global singleton settings instance
 settings = Settings()
+
+if settings.llm_provider == LLMProviderType.MOCK:
+    warnings.warn(
+        "SACCADE_LLM_PROVIDER is unset or 'mock'. All LLM calls will return "
+        "hardcoded deterministic responses. Set a real provider in .env "
+        "(e.g. SACCADE_LLM_PROVIDER=anthropic).",
+        UserWarning,
+        stacklevel=2,
+    )

@@ -1,6 +1,7 @@
 """Local JSON filesystem repository for canonical profiles and applications."""
 
 import json
+import uuid
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -62,7 +63,7 @@ class LocalFileStorage(BaseStorageRepository):
         return [f.stem for f in self.profiles_dir.glob("*.json")]
 
     def save_application_record(self, record: Dict[str, Any]) -> str:
-        app_id = record.get("id", f"app_{len(list(self.apps_dir.glob('*.json'))) + 1}")
+        app_id = record.get("id") or f"app_{uuid.uuid4().hex[:8]}"
         target_path = self.apps_dir / f"{app_id}.json"
         try:
             target_path.write_text(json.dumps(record, indent=2), encoding="utf-8")

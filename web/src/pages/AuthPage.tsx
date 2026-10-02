@@ -9,28 +9,63 @@ interface AuthPageProps {
   onNavigate: (page: Page) => void;
 }
 
+// Seeded demo account — create this user once in the Supabase dashboard.
+const DEMO_EMAIL = 'demo@saccade.langratia.com';
+const DEMO_PASSWORD = 'saccade-demo-2026';
+
 export const AuthPage = ({ onNavigate }: AuthPageProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const { login, signup, authError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
-    setTimeout(() => {
-      login('mock-token');
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await signup(email, password, name || undefined);
+      }
       onNavigate('studio');
-    }, 1000);
+    } catch (err: any) {
+      setError(authError || err.message || 'Authentication failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDemo = () => {
+  const handleDemo = async () => {
+    setError(null);
     setIsLoading(true);
-    setTimeout(() => {
-      login('demo-token');
+    try {
+      await login(DEMO_EMAIL, DEMO_PASSWORD);
       onNavigate('studio');
-    }, 1000);
+    } catch (err: any) {
+      setError('Demo account unavailable. Please sign up for a free account.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Enter your email address above, then click Forgot password.');
+      return;
+    }
+    const { supabase } = await import('../lib/supabaseClient');
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      setError(error.message);
+    } else {
+      setError(null);
+      alert(`Password reset link sent to ${email}`);
+    }
   };
 
   return (
@@ -38,7 +73,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
       {/* Left side - Product info */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-[var(--color-surface)] border-r border-[var(--color-border)] relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        
+
         <div className="relative z-10 flex items-center gap-2 font-bold text-xl text-white">
           <div className="w-8 h-8 rounded bg-[var(--color-accent)] flex items-center justify-center">
             <span className="text-white text-sm">S</span>
@@ -50,12 +85,12 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
           <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
             The engineering-grade application pipeline.
           </h1>
-          
+
           <div className="space-y-4 mb-12">
             {[
-              "Pixel-perfect LaTeX rendering engine",
-              "Cryptographic truth-anchoring",
-              "Local MCP agent integration"
+              'Pixel-perfect LaTeX rendering engine',
+              'Cryptographic truth-anchoring',
+              'Local MCP agent integration',
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-3 text-[var(--color-text-secondary)]">
                 <CheckCircle size={20} className="text-[var(--color-success)]" />
@@ -66,9 +101,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
         </div>
 
         <div className="relative z-10 bg-[var(--color-surface-2)] border border-[var(--color-border)] rounded-2xl p-6 max-w-md">
-          <div className="flex text-[var(--color-accent)] mb-4">
-            ★★★★★
-          </div>
+          <div className="flex text-[var(--color-accent)] mb-4">★★★★★</div>
           <p className="text-[var(--color-text-primary)] font-medium mb-4">
             "Saccade changed how I apply for roles. No more word processor formatting nightmares, just pure logic and clean PDFs."
           </p>
@@ -106,11 +139,29 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
               {isLogin ? 'Welcome back' : 'Create an account'}
             </h2>
             <p className="text-xs text-[var(--color-text-secondary)]">
-              {isLogin ? 'Enter your details to access your studio' : 'Start compiling your professional future'}
+              {isLogin
+                ? 'Enter your details to access your studio'
+                : 'Start compiling your professional future'}
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <Input
+                type="text"
+                label="Full name"
+                placeholder="Alex Mercer"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+              />
+            )}
             <Input
               type="email"
               label="Email address"
@@ -121,7 +172,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
               icon={<Mail size={16} />}
               required
             />
-            
+
             <div>
               <Input
                 type="password"
@@ -129,7 +180,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete={isLogin ? "current-password" : "new-password"}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 icon={<Lock size={16} />}
                 required
               />
@@ -137,7 +188,7 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
                 <div className="flex justify-end mt-1.5">
                   <button
                     type="button"
-                    onClick={() => alert("Password reset link sent to registered email.")}
+                    onClick={handleForgotPassword}
                     className="text-xs text-[var(--color-accent)] hover:underline"
                   >
                     Forgot password?
@@ -173,9 +224,9 @@ export const AuthPage = ({ onNavigate }: AuthPageProps) => {
           </div>
 
           <p className="mt-8 text-center text-sm text-[var(--color-text-muted)]">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => { setIsLogin(!isLogin); setError(null); }}
               className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] font-medium"
             >
               {isLogin ? 'Sign up' : 'Sign in'}

@@ -1,6 +1,7 @@
 """Tectonic LaTeX compilation worker with auto-provisioning and self-healing retries."""
 
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
@@ -16,10 +17,18 @@ from core.models.document import RenderResult
 from rendering.sanitizers import escape_latex
 
 
-TECTONIC_DOWNLOAD_URL = (
-    "https://github.com/tectonic-typesetting/tectonic/releases/download/"
-    "tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz"
-)
+def _tectonic_download_url() -> str:
+    """Returns the correct Tectonic static binary URL for the current CPU architecture."""
+    machine = platform.machine().lower()
+    if machine in ("arm64", "aarch64"):
+        return (
+            "https://github.com/tectonic-typesetting/tectonic/releases/download/"
+            "tectonic%400.15.0/tectonic-0.15.0-aarch64-unknown-linux-musl.tar.gz"
+        )
+    return (
+        "https://github.com/tectonic-typesetting/tectonic/releases/download/"
+        "tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz"
+    )
 
 
 def get_saccade_bin_dir() -> Path:
@@ -81,7 +90,7 @@ def download_tectonic_binary(target_dir: Optional[Path] = None) -> Optional[Path
 
     try:
         archive_path = target_dir / "tectonic.tar.gz"
-        urllib.request.urlretrieve(TECTONIC_DOWNLOAD_URL, archive_path)
+        urllib.request.urlretrieve(_tectonic_download_url(), archive_path)
 
         with tarfile.open(archive_path, "r:gz") as tar:
             tar.extractall(path=target_dir)
@@ -148,6 +157,7 @@ class LatexCompiler:
                 cmd = [
                     str(compiler),
                     "-interaction=nonstopmode",
+                    "-no-shell-escape",
                     "-output-directory", str(tmp_path),
                     str(tex_file)
                 ]

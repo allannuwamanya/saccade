@@ -6,7 +6,7 @@ import asyncio
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 import httpx
-from fastapi import FastAPI, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -34,7 +34,12 @@ app = FastAPI(
 # Enable CORS for local web development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:4173",
+        "https://saccade.langratia.com",
+        "https://saccade.pages.dev",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -174,9 +179,16 @@ class RenderRawRequest(BaseModel):
 
 @app.post("/api/render/raw")
 async def render_raw_latex(req: RenderRawRequest):
+    from rendering.latex_guard import assert_safe_latex
+
     source = req.latex_source or req.latex or ""
     if not source.strip():
         raise HTTPException(status_code=400, detail="Empty LaTeX source provided")
+
+    try:
+        assert_safe_latex(source)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     import hashlib
     h = hashlib.md5(source.encode("utf-8")).hexdigest()[:8]
@@ -191,7 +203,6 @@ async def render_raw_latex(req: RenderRawRequest):
         "status": "success",
         "pdf_url": f"/api/pdf/{filename}",
         "compile_time": res.compile_time_seconds,
-        "latex_source": source
     }
 
 
@@ -242,12 +253,11 @@ class AiStreamRequest(BaseModel):
     system_prompt: Optional[str] = None
     provider: Optional[str] = "openrouter"
     model: Optional[str] = None
-    api_key: Optional[str] = None
     current_latex: Optional[str] = None
 
 
 @app.post("/api/ai/stream")
-async def ai_stream(req: AiStreamRequest):
+async def ai_stream(req: AiStreamRequest, request: Request):
     system = req.system_prompt or (
         "You are an expert AI LaTeX Resume and Career Document Copilot. "
         "If the user greets you (e.g. 'hello', 'hi') or asks general questions or career advice, respond purely conversationally in the chat. "
@@ -255,28 +265,35 @@ async def ai_stream(req: AiStreamRequest):
         "When the user does request changes or tailoring, explain what you improved and provide the complete updated LaTeX document inside a ```latex code block."
     )
 
-    api_key = req.api_key
+    # API key: read from Authorization header only (never from request body)
+    auth_header = request.headers.get("Authorization", "")
+    client_key = auth_header.removeprefix("Bearer ").strip() or None
+
     provider = (req.provider or "openrouter").lower()
 
-    if not api_key:
-        if provider == "openrouter":
-            api_key = os.environ.get("OPENROUTER_API_KEY")
-        elif provider == "openai":
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if not api_key and os.environ.get("OPENROUTER_API_KEY"):
-                provider = "openrouter"
-                api_key = os.environ.get("OPENROUTER_API_KEY")
-        elif provider == "anthropic":
-            api_key = os.environ.get("ANTHROPIC_API_KEY")
-        elif provider == "gemini":
-            api_key = os.environ.get("GEMINI_API_KEY")
-        else:
-            api_key = os.environ.get("OPENROUTER_API_KEY")
+    # Resolve key: client-provided header first, then server-side env fallback
+    if client_key:
+        api_key = client_key
+    elif provider == "openrouter":
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+    elif provider == "openai":
+        api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
+        if not os.environ.get("OPENAI_API_KEY") and api_key:
             provider = "openrouter"
+    elif provider == "anthropic":
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+    elif provider == "gemini":
+        api_key = os.environ.get("GEMINI_API_KEY")
+    else:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        provider = "openrouter"
 
     if not api_key and os.environ.get("OPENROUTER_API_KEY"):
         provider = "openrouter"
         api_key = os.environ.get("OPENROUTER_API_KEY")
+
+    # Limit current_latex size to prevent prompt-injection via huge payloads
+    safe_latex = (safe_latex or "")[:12000]
 
     async def event_generator():
         if api_key and provider == "openai":
@@ -285,10 +302,10 @@ async def ai_stream(req: AiStreamRequest):
                 "Content-Type": "application/json"
             }
             messages = [{"role": "system", "content": system}]
-            if req.current_latex:
+            if safe_latex:
                 messages.append({
                     "role": "user",
-                    "content": f"Current LaTeX resume:\n```latex\n{req.current_latex}\n```"
+                    "content": f"Current LaTeX resume:\n```latex\n{safe_latex}\n```"
                 })
                 messages.append({
                     "role": "assistant",
@@ -334,10 +351,10 @@ async def ai_stream(req: AiStreamRequest):
                 "Content-Type": "application/json"
             }
             messages = []
-            if req.current_latex:
+            if safe_latex:
                 messages.append({
                     "role": "user",
-                    "content": f"Current LaTeX resume:\n```latex\n{req.current_latex}\n```"
+                    "content": f"Current LaTeX resume:\n```latex\n{safe_latex}\n```"
                 })
                 messages.append({
                     "role": "assistant",
@@ -386,10 +403,10 @@ async def ai_stream(req: AiStreamRequest):
                 "X-Title": "Saccade Studio"
             }
             messages = [{"role": "system", "content": system}]
-            if req.current_latex:
+            if safe_latex:
                 messages.append({
                     "role": "user",
-                    "content": f"Current LaTeX resume:\n```latex\n{req.current_latex}\n```"
+                    "content": f"Current LaTeX resume:\n```latex\n{safe_latex}\n```"
                 })
                 messages.append({
                     "role": "assistant",
