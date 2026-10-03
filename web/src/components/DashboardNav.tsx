@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Sparkles, User, Briefcase, Cpu, LogOut, ArrowLeft } from 'lucide-react';
+import { PenLine, UserCircle, Kanban, Bot, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export type DashboardTab = 'studio' | 'profile' | 'applications' | 'agent-hub';
@@ -11,6 +11,13 @@ interface DashboardNavProps {
   isBackendHealthy: boolean | null;
 }
 
+const tabs: { id: DashboardTab; label: string; icon: React.ReactNode }[] = [
+  { id: 'studio',       label: 'Resume Builder', icon: <PenLine size={14} /> },
+  { id: 'profile',      label: 'My CV',          icon: <UserCircle size={14} /> },
+  { id: 'applications', label: 'Job Tracker',    icon: <Kanban size={14} /> },
+  { id: 'agent-hub',    label: 'Automations',    icon: <Bot size={14} /> },
+];
+
 export const DashboardNav: React.FC<DashboardNavProps> = ({
   currentTab,
   onSelectTab,
@@ -19,106 +26,85 @@ export const DashboardNav: React.FC<DashboardNavProps> = ({
 }) => {
   const { user, logout } = useAuth();
 
+  const avatarInitials = user?.name
+    ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    : user?.email?.slice(0, 2).toUpperCase() ?? '??';
+
   return (
-    <header className="h-14 border-b border-slate-800 bg-slate-900/90 backdrop-blur px-4 flex items-center justify-between shrink-0 z-20">
-      {/* Brand & Landing Link */}
-      <div className="flex items-center gap-3">
+    <header className="h-14 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20 gap-4">
+      {/* Brand */}
+      <div className="flex items-center gap-3 shrink-0">
         <button
           onClick={onGoLanding}
-          className="text-slate-400 hover:text-white transition p-1 rounded-lg hover:bg-slate-800"
-          title="Back to Landing Page"
+          className="text-zinc-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-zinc-800"
+          title="Back to home"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft size={15} />
         </button>
 
-        <div className="flex items-center gap-2 cursor-pointer" onClick={onGoLanding}>
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-md shadow-blue-500/20">
-            <FileText className="w-3.5 h-3.5 text-white" />
+        <button onClick={onGoLanding} className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-shadow">
+            <span className="text-white text-xs font-black">S</span>
           </div>
           <span className="font-bold text-sm tracking-tight text-white">Saccade</span>
-        </div>
+        </button>
 
-        {/* API Status Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-slate-950 border border-slate-800">
+        {/* Status pill */}
+        <div className="hidden sm:flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800">
           <span
-            className={`w-2 h-2 rounded-full ${
+            className={`w-1.5 h-1.5 rounded-full ${
               isBackendHealthy === true
                 ? 'bg-emerald-400 animate-pulse'
                 : isBackendHealthy === false
                 ? 'bg-rose-500'
-                : 'bg-amber-400'
+                : 'bg-amber-400 animate-pulse'
             }`}
           />
-          <span className="text-slate-400">
-            {isBackendHealthy === true ? 'API Connected' : isBackendHealthy === false ? 'Offline' : 'Connecting...'}
+          <span className="text-zinc-400">
+            {isBackendHealthy === true ? 'Connected' : isBackendHealthy === false ? 'Offline' : 'Connecting'}
           </span>
         </div>
       </div>
 
-      {/* Main Tabs Navigation */}
-      <nav className="flex items-center gap-1 bg-slate-950/70 p-1 rounded-xl border border-slate-800/80 text-xs">
-        <button
-          onClick={() => onSelectTab('studio')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-            currentTab === 'studio'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Studio & AI</span>
-        </button>
-
-        <button
-          onClick={() => onSelectTab('profile')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-            currentTab === 'profile'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-          }`}
-        >
-          <User className="w-3.5 h-3.5" />
-          <span>Profile & Facts</span>
-        </button>
-
-        <button
-          onClick={() => onSelectTab('applications')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-            currentTab === 'applications'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-          }`}
-        >
-          <Briefcase className="w-3.5 h-3.5" />
-          <span>Applications & ATS</span>
-        </button>
-
-        <button
-          onClick={() => onSelectTab('agent-hub')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-            currentTab === 'agent-hub'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-          }`}
-        >
-          <Cpu className="w-3.5 h-3.5" />
-          <span>Agent MCP</span>
-        </button>
+      {/* Tab bar */}
+      <nav className="flex items-center gap-0.5 bg-zinc-900/80 border border-zinc-800 rounded-xl p-1 text-xs">
+        {tabs.map((tab) => {
+          const isActive = currentTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onSelectTab(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
+                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800'
+              }`}
+            >
+              {tab.icon}
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
       </nav>
 
-      {/* User Info & Logout */}
-      <div className="flex items-center gap-2">
-        <div className="hidden md:flex flex-col text-right">
-          <span className="text-xs font-semibold text-slate-200">{user?.name || 'Guest User'}</span>
-          <span className="text-[10px] text-slate-400">{user?.email || 'Demo Profile'}</span>
+      {/* User */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="hidden md:flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[10px] shadow-sm">
+            {avatarInitials}
+          </div>
+          <div className="flex flex-col text-right leading-none">
+            <span className="text-xs font-semibold text-zinc-200">{user?.name || 'Guest'}</span>
+            <span className="text-[10px] text-zinc-500 mt-0.5">{user?.email}</span>
+          </div>
         </div>
 
         <button
           onClick={logout}
-          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition"
-          title="Sign Out"
+          className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 rounded-lg transition-colors"
+          title="Sign out"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut size={15} />
         </button>
       </div>
     </header>
